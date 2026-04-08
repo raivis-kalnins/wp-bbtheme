@@ -1,8 +1,8 @@
 body {
-	font-family: var(--bs-body-font);
-	font-weight: var(--bs-body-font-weight);
-	line-height: var(--bs-body-line-height);
-	color: var(--bs-body-colour);
+	font-family: var(--wp-body-font);
+	font-weight: $weight-regular;
+	line-height: 1.5;
+	color: var(--wp-text-color);
 }
 
 h1,.h1,
@@ -12,7 +12,7 @@ h4,.h4,
 h5,.h5,
 h6,.h6 {
 	letter-spacing: $letter-spacing-heading;	
-	font-family: $headings-font;
+	font-family: var(--wp-heading-font);
 	font-weight: $weight-bold;
 
 	mark{
@@ -21,13 +21,9 @@ h6,.h6 {
 }
 
 @mixin h1-styling {
-	font-size: var(--bs-headings-h1-font-size);
-	line-height: var(--bs-headings-h1-line-height);
+	font-size: var(--wp-h1-font-size);
+	line-height: 1.1;
 	font-weight: $weight-extrabold;
-
-	@include media-breakpoint-down(lg) {
-		--bs-headings-h1-font-size: 2rem;
-	}
 }
 
 h1,.h1 {
@@ -35,8 +31,8 @@ h1,.h1 {
 }
 
 @mixin h2-styling {
-	line-height: var(--bs-headings-h2-line-height);
-	font-size: var(--bs-headings-h2-font-size);
+	line-height: 1.15;
+	font-size: var(--wp-h2-font-size);
 	color: var(--wp-brand-color);
 	font-weight: $weight-bold;	
 }
@@ -46,8 +42,8 @@ h2,.h2 {
 }
 
 @mixin h3-styling {
-	line-height: var(--bs-headings-h3-line-height);
-	font-size: var(--bs-headings-h3-font-size);
+	line-height: 1.2;
+	font-size: var(--wp-h3-font-size);
 	font-weight: $weight-bold;
 }
 
@@ -56,8 +52,8 @@ h3,.h3 {
 }
 
 @mixin h4-styling {
-	line-height: var(--bs-headings-h4-line-height);
-	font-size: var(--bs-headings-h4-font-size);
+	line-height: 1.25;
+	font-size: var(--wp-h4-font-size);
 	font-weight: $weight-bold;
 }
 
@@ -66,8 +62,8 @@ h4,.h4 {
 }
 
 @mixin h5-styling {
-	line-height: var(--bs-headings-h5-line-height);
-	font-size: var(--bs-headings-h5-font-size);
+	line-height: 1.3;
+	font-size: var(--wp-h5-font-size);
 	font-weight: $weight-bold;
 }
 
@@ -76,8 +72,8 @@ h5,.h5 {
 }
 
 @mixin h6-styling {
-	line-height: var(--bs-headings-h6-line-height);
-	font-size: var(--bs-headings-h6-font-size);
+	line-height: 1.35;
+	font-size: var(--wp-h6-font-size);
 	font-weight: $weight-regular;
 }
 
@@ -86,7 +82,7 @@ h6,.h6 {
 }
 
 :where(p, li, span, a, small, em, strong, code, blockquote, figcaption) {
-  color: var(--bs-body-color);
+  color: var(--wp-text-color);
 }
 
 .text-medium, .text-medium * {
@@ -101,10 +97,11 @@ h6,.h6 {
 }
 
 p, li, span, address {
-	color: var(--bs-body-colour);
-	font-size: var(--bs-body-font-size);
+	color: var(--wp-text-color);
+	font-size: var(--wp-body-size);
 }
 
 a {
-	color: var(--bs-link-colour);
+	color: var(--wp-link-color);
 }
+a:hover { color: var(--wp-link-hover-color); }

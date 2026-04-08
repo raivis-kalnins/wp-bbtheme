@@ -5,16 +5,19 @@ $headings-font: $acf-headings-font !default;
 $body-font: $acf-body-font !default;
 
 $grid-columns: 12 !default;
-$grid-gutter-width: 1.5rem !default;
+$grid-gutter-width: $acf-gutter-width !default;
 $container-width: $acf-container-width !default;
 $content-width: $acf-content-width !default;
+$wide-width: $acf-wide-width !default;
 
 $container-width-css: var(--wp-container-width, #{$container-width});
 $content-width-css: var(--wp-content-width, #{$content-width});
 $container-margin-right: calc(-15px - ((100vw - #{$container-width-css}) / 2));
 $container-margin-left: calc(15px + ((100vw - #{$container-width-css}) / 2));
 
+
 $brandcolor: $acf-brandcolor !default;
+$accent-color: $acf-accent-color !default;
 $grey-light: $acf-grey-light !default;
 $grey-dark: $acf-grey-dark !default;
 $grey-txt: $acf-grey-txt !default;
@@ -89,3 +92,10 @@ $grid-breakpoints: (
   xxxl: 1600px,
   xxl_down: 1535px
 ) !default;
+
+$small: $acf-small-size !default;
+$body-size: $acf-body-size !default;
+$large: $acf-large-size !default;
+$h4-font-size: $acf-h4-font-size !default;
+$h5-font-size: $acf-h5-font-size !default;
+$h6-font-size: $acf-h6-font-size !default;

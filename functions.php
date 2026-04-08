@@ -82,15 +82,21 @@ function wp_theme_enqueue_assets() {
 }
 add_action('wp_enqueue_scripts', 'wp_theme_enqueue_assets', 20);
 
-function wp_theme_admin_assets() {
+function wp_theme_admin_assets($hook = '') {
+    if ((function_exists('is_customize_preview') && is_customize_preview()) || isset($_GET['customize_changeset_uuid'])) {
+        return;
+    }
+
     $manifest = get_template_directory() . '/dist/manifest.json';
     if (!file_exists($manifest)) {
         return;
     }
+
     $data = json_decode((string) file_get_contents($manifest), true);
     if (!is_array($data)) {
         return;
     }
+
     if (!empty($data['src/scss/admin.scss']['file'])) {
         wp_enqueue_style('wp-theme-admin', get_template_directory_uri() . '/dist/' . ltrim($data['src/scss/admin.scss']['file'], '/'), [], null);
     }
@@ -237,6 +243,16 @@ function wp_theme_login_logo() {
     echo '<style>#login h1 a,.login h1 a{background:url(' . esc_url($logo) . ') center/contain no-repeat;width:160px;height:80px;}</style>';
 }
 add_action('login_enqueue_scripts', 'wp_theme_login_logo');
+
+
+add_action('admin_notices', function () {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    if (!function_exists('acf_add_options_page')) {
+        echo '<div class="notice notice-warning"><p><strong>WP BBTheme:</strong> ACF Pro is required for Theme Styles options.</p></div>';
+    }
+});
 
 foreach (['acf-theme-options.php','tpl-helper.php','shortcodes.php','loc.php','info.php','block-types.php','wp-nav-walker.php'] as $file) {
     $path = get_template_directory() . '/inc/Custom/' . $file;
