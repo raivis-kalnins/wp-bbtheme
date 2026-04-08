@@ -1,0 +1,31 @@
+:root {
+  --wp-brand-color: #{$brandcolor};
+  --wp-text-color: #{$grey-txt};
+  --wp-heading-color: #{$darkest};
+  --wp-light-bg-color: #{$light-bg};
+  --wp-grey-dark-color: #{$grey-dark};
+  --wp-green-color: #{$green};
+  --wp-white-color: #{$white};
+  --wp-grey-light-color: #{$grey-light};
+  --wp-black-color: #{$black};
+  --wp-red-color: #{$red};
+
+  --wp-body-font: #{$body-font};
+  --wp-body-size: #{$body-size};
+  --wp-font-size-medium: #{$large};
+  --wp-font-size-small: #{$small};
+  --wp-heading-font: #{$headings-font};
+  --wp-heading-font-weight: #{$font-weight-semibold};
+  --wp-body-font-weight: #{$font-weight-normal};
+
+  --wp-h1-font-size: #{$h1-font-size};
+  --wp-h2-font-size: #{$h2-font-size};
+  --wp-h3-font-size: #{$h3-font-size};
+  --wp-h4-font-size: #{$h4-font-size};
+  --wp-h5-font-size: #{$h5-font-size};
+  --wp-h6-font-size: #{$h6-font-size};
+
+  --wp-container-width: #{$container-width};
+  --wp-content-width: #{$content-width};
+  --wp-theme-radius: 18px;
+}

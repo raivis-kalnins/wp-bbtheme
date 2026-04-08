@@ -1,0 +1,110 @@
+body {
+	font-family: var(--bs-body-font);
+	font-weight: var(--bs-body-font-weight);
+	line-height: var(--bs-body-line-height);
+	color: var(--bs-body-colour);
+}
+
+h1,.h1,
+h2,.h2,
+h3,.h3,
+h4,.h4,
+h5,.h5,
+h6,.h6 {
+	letter-spacing: $letter-spacing-heading;	
+	font-family: $headings-font;
+	font-weight: $weight-bold;
+
+	mark{
+		padding: 0;
+	}
+}
+
+@mixin h1-styling {
+	font-size: var(--bs-headings-h1-font-size);
+	line-height: var(--bs-headings-h1-line-height);
+	font-weight: $weight-extrabold;
+
+	@include media-breakpoint-down(lg) {
+		--bs-headings-h1-font-size: 2rem;
+	}
+}
+
+h1,.h1 {
+	@include h1-styling;
+}
+
+@mixin h2-styling {
+	line-height: var(--bs-headings-h2-line-height);
+	font-size: var(--bs-headings-h2-font-size);
+	color: var(--wp-brand-color);
+	font-weight: $weight-bold;	
+}
+
+h2,.h2 {
+	@include h2-styling;
+}
+
+@mixin h3-styling {
+	line-height: var(--bs-headings-h3-line-height);
+	font-size: var(--bs-headings-h3-font-size);
+	font-weight: $weight-bold;
+}
+
+h3,.h3 {
+	@include h3-styling;
+}
+
+@mixin h4-styling {
+	line-height: var(--bs-headings-h4-line-height);
+	font-size: var(--bs-headings-h4-font-size);
+	font-weight: $weight-bold;
+}
+
+h4,.h4 {
+	@include h4-styling;
+}
+
+@mixin h5-styling {
+	line-height: var(--bs-headings-h5-line-height);
+	font-size: var(--bs-headings-h5-font-size);
+	font-weight: $weight-bold;
+}
+
+h5,.h5 {
+	@include h5-styling;	
+}
+
+@mixin h6-styling {
+	line-height: var(--bs-headings-h6-line-height);
+	font-size: var(--bs-headings-h6-font-size);
+	font-weight: $weight-regular;
+}
+
+h6,.h6 {
+	@include h6-styling;
+}
+
+:where(p, li, span, a, small, em, strong, code, blockquote, figcaption) {
+  color: var(--bs-body-color);
+}
+
+.text-medium, .text-medium * {
+	font-size: 0.875rem;
+	letter-spacing: $letter-spacing-body;
+}
+
+.text-small, .text-small * {
+	font-size: 0.75rem;
+	line-height: 140%;
+	letter-spacing: $letter-spacing-body;
+}
+
+p, li, span, address {
+	color: var(--bs-body-colour);
+	font-size: var(--bs-body-font-size);
+}
+
+a {
+	color: var(--bs-link-colour);
+}

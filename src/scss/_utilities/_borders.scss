@@ -1,0 +1,61 @@
+$utilities: map-merge(
+    $utilities,
+    (
+        "border":
+            map-merge(
+                map-get($utilities, "border"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-start":
+            map-merge(
+                map-get($utilities, "border-start"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-end":
+            map-merge(
+                map-get($utilities, "border-end"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-top":
+            map-merge(
+                map-get($utilities, "border-top"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-bottom":
+            map-merge(
+                map-get($utilities, "border-bottom"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-width":
+            map-merge(
+                map-get($utilities, "border-width"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-color":
+            map-merge(
+                map-get($utilities, "border-color"),
+                (
+                    responsive: true,
+                )
+            ),
+        "border-opacity":
+            map-merge(
+                map-get($utilities, "border-opacity"),
+                (
+                    responsive: true,
+                )
+            ),
+    )
+);

@@ -1,0 +1,14 @@
+<!-- wp:template-part {"slug":"header"} /-->
+<!-- wp:shortcode -->[custom_hero_casestudy]<!-- /wp:shortcode -->
+<!-- wp:group {"tagName":"main","className":"wp-theme-section","layout":{"type":"constrained"}} -->
+<main class="wp-block-group wp-theme-section" id="wp-theme-main">
+<!-- wp:shortcode -->[wp_theme_breadcrumbs]<!-- /wp:shortcode -->
+<!-- wp:heading {"level":1} --><h1 class="wp-block-heading">All Case Studies</h1><!-- /wp:heading -->
+<!-- wp:search {"label":"Search","showLabel":false,"placeholder":"Search","buttonText":"Search","buttonPosition":"no-button"} /-->
+<!-- wp:shortcode -->[cat_listed_cpt post_type="case-study" taxonomy="cs-category"]<!-- /wp:shortcode -->
+<!-- wp:separator --><hr class="wp-block-separator has-alpha-channel-opacity"/><!-- /wp:separator -->
+<!-- wp:shortcode -->[posts_cpt post_type="case-study" taxonomy="cs-category"]<!-- /wp:shortcode -->
+<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button {"className":"btn-secondary","anchor":"seeMore"} --><div class="wp-block-button btn-secondary"><a class="wp-block-button__link wp-element-button" id="seeMore">More</a></div><!-- /wp:button --></div><!-- /wp:buttons -->
+</main>
+<!-- /wp:group -->
+<!-- wp:template-part {"slug":"footer"} /-->

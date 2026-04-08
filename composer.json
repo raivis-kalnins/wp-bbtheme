@@ -1,0 +1,15 @@
+{
+    "name": "wp/wp-theme",
+    "autoload": {
+        "psr-4": {
+            "WP\\WPTheme\\": "inc/"
+        }
+    },
+    "authors": [
+        {
+            "name": "DP",
+            "email": "info@dp.click"
+        }
+    ],
+    "require": {}
+}
