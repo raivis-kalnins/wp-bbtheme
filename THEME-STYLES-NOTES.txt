@@ -1,4 +1,0 @@
-Theme Styles restored.
-Requires ACF Pro.
-Admin path: Theme Settings -> Theme Styles.
-Runtime CSS variables are printed in wp_head/admin_head and also written to assets/css/acf-theme-vars.css and src/scss/_acf-variables.generated.scss when options are saved.
