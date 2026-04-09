@@ -14,18 +14,8 @@ add_shortcode('need_login', 'shortcode_needLogin');
 
 $component_dir = get_template_directory() . '/templates/components/shortcodes/';
 $includes = [
-    'products_items.php'      => class_exists('WooCommerce'),
-    'testimonials.php'        => true,
-    'posts_cpt.php'           => true,
     'custom-hero.php'         => true,
-    'load-more.php'           => true,
-    'cat_listed_cpt.php'      => true,
     'avatar_cpt.php'          => true,
-    'cs_img.php'              => true,
-    'woo_cat_bottom_desc.php' => class_exists('WooCommerce'),
-    'products-loop.php'       => class_exists('WooCommerce'),
-    'product_tabs.php'        => class_exists('WooCommerce'),
-    'product_faq.php'         => class_exists('WooCommerce'),
 ];
 foreach ($includes as $file => $enabled) {
     $path = $component_dir . $file;

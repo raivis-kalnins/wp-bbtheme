@@ -82,30 +82,6 @@ function wp_theme_enqueue_assets() {
 }
 add_action('wp_enqueue_scripts', 'wp_theme_enqueue_assets', 20);
 
-function wp_theme_admin_assets($hook = '') {
-    if ((function_exists('is_customize_preview') && is_customize_preview()) || isset($_GET['customize_changeset_uuid'])) {
-        return;
-    }
-
-    $manifest = get_template_directory() . '/dist/manifest.json';
-    if (!file_exists($manifest)) {
-        return;
-    }
-
-    $data = json_decode((string) file_get_contents($manifest), true);
-    if (!is_array($data)) {
-        return;
-    }
-
-    if (!empty($data['src/scss/admin.scss']['file'])) {
-        wp_enqueue_style('wp-theme-admin', get_template_directory_uri() . '/dist/' . ltrim($data['src/scss/admin.scss']['file'], '/'), [], null);
-    }
-    if (!empty($data['src/js/admin.js']['file'])) {
-        wp_enqueue_script('wp-theme-admin', get_template_directory_uri() . '/dist/' . ltrim($data['src/js/admin.js']['file'], '/'), [], null, true);
-    }
-}
-add_action('admin_enqueue_scripts', 'wp_theme_admin_assets');
-
 function wp_theme_cleanup() {
     remove_action('wp_head', 'print_emoji_detection_script', 7);
     remove_action('wp_print_styles', 'print_emoji_styles');
@@ -259,4 +235,9 @@ foreach (['acf-theme-options.php','tpl-helper.php','shortcodes.php','loc.php','i
     if (file_exists($path)) {
         require_once $path;
     }
+}
+
+$bbtheme_animation_bootstrap = get_template_directory() . '/inc/animations/bootstrap.php';
+if (file_exists($bbtheme_animation_bootstrap)) {
+    require_once $bbtheme_animation_bootstrap;
 }

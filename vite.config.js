@@ -24,8 +24,6 @@ export default defineConfig({
             input: {
                 style: "src/scss/public.scss",
                 script: "src/js/main.js",
-                admin_style: "src/scss/admin.scss",
-				admin_script: "src/js/admin.js"
             },
         },
     },

@@ -1,0 +1,73 @@
+body.upload-php .wp-theme-free-images-panel {
+  padding: 12px;
+}
+
+body.upload-php .wp-theme-media-toolbar {
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+body.upload-php .wp-theme-provider-grid {
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+
+body.upload-php .wp-theme-provider-pill {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+body.upload-php .wp-theme-media-optimize-tools {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+body.upload-php .wp-theme-media-tools .description {
+  margin: 6px 0;
+}
+
+body.settings_page_wp-theme-settings .wp-theme-mini-note {
+  font-size: 13px;
+  color: #50575e;
+}
+
+body.settings_page_wp-theme-settings .acf-input-prepend {
+  background: #f6f7f7;
+  border-color: #c3c4c7;
+  color: #1d2327;
+  font-weight: 600;
+  border-radius: 8px 0 0 8px;
+  min-width: 88px;
+  justify-content: center;
+}
+
+body.settings_page_wp-theme-settings .wp-theme-size-row .acf-input-prepend {
+  font-size: 0;
+  position: relative;
+}
+
+body.settings_page_wp-theme-settings .wp-theme-size-desktop .acf-input-prepend::before {
+  content: "🖥";
+  font-size: 16px;
+  line-height: 1;
+}
+body.settings_page_wp-theme-settings .wp-theme-size-tablet .acf-input-prepend::before {
+  content: "📱";
+  font-size: 16px;
+  line-height: 1;
+}
+body.settings_page_wp-theme-settings .wp-theme-size-mobile .acf-input-prepend::before {
+  content: "📲";
+  font-size: 16px;
+  line-height: 1;
+}
+
+body.settings_page_wp-theme-settings .wp-theme-size-row .acf-input-wrap {
+  display: flex;
+}
+
+@media (max-width: 782px) {
+  body.settings_page_wp-theme-settings .acf-input-prepend {
+    min-width: 64px;
+  }
+}

@@ -106,11 +106,11 @@ document.addEventListener("DOMContentLoaded", function() {
 	/**
 	 * Switching Cart
 	 */
-	// if ($("body").hasClass("woo-cart")) {
-	// 	$(".wp-block-woocommerce-mini-cart").css({"display":"flex","opacity":"1"});
-	// } else {
-	// 	$(".wp-block-woocommerce-mini-cart").css("display","none");
-	// }
+	if ($("body").hasClass("woo-cart")) {
+		$(".wp-block-woocommerce-mini-cart").css({"display":"flex","opacity":"1"});
+	} else {
+		$(".wp-block-woocommerce-mini-cart").css("display","none");
+	}
 
 	/**
 	 * Switching Account Btn
