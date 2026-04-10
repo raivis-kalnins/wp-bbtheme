@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function initTypographyUnits() {
     const header = document.querySelector('.wp-theme-size-header');
     if (header && !header.dataset.enhanced) {
-      header.innerHTML = '<span>Type</span><span>🖥 Desktop</span><span>📱 Tablet</span><span>📲 Mobile</span>';
+      header.innerHTML = '<span>Type</span><span><strong>🖥</strong>&nbsp;Desktop</span><span><strong>📱</strong>&nbsp;Tablet</span><span><strong>📲</strong>&nbsp;Mobile</span>';
       header.dataset.enhanced = '1';
     }
 
@@ -56,153 +56,131 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function initAnimationUI() {
-    const animationSelect = getFieldInput('theme_anim_default_class', 'select');
-    const durationInput = getFieldInput('theme_anim_duration', 'input');
-    const delayInput = getFieldInput('theme_anim_delay', 'input');
-    const repeatInput = getFieldInput('theme_anim_repeat', 'select');
-    const previewTextInput = getFieldInput('theme_anim_preview_text', 'input');
-    const previewSelect = document.getElementById('bbtheme-preview-select');
-    const previewTrigger = document.getElementById('bbtheme-preview-trigger');
-    const previewBox = document.getElementById('bbtheme-preview-box');
-    const searchInput = document.getElementById('bbtheme-animation-search');
-    const codeSnippet = document.getElementById('bbtheme-animation-code-snippet');
-    const tabs = document.querySelectorAll('.bbtheme-animation-tabs .nav-tab');
-    const panels = document.querySelectorAll('.bbtheme-tab-panel');
-    const tbody = document.querySelector('.bbtheme-animation-table tbody');
-    const registry = (window.BBThemeAdminSettings && window.BBThemeAdminSettings.animationRegistry) || [];
 
-    function showTab(hash) {
-      tabs.forEach((tab) => tab.classList.toggle('nav-tab-active', tab.getAttribute('href') === hash));
-      panels.forEach((panel) => panel.classList.toggle('is-active', '#' + panel.id === hash));
-    }
+function initAnimationUI() {
+  const animationSelect = getFieldInput('theme_anim_default_class', 'select');
+  const durationInput = getFieldInput('theme_anim_duration', 'input');
+  const delayInput = getFieldInput('theme_anim_delay', 'input');
+  const repeatInput = getFieldInput('theme_anim_repeat', 'select');
+  const previewTextInput = getFieldInput('theme_anim_preview_text', 'input');
+  const previewSelect = document.getElementById('bbtheme-preview-select');
+  const previewTrigger = document.getElementById('bbtheme-preview-trigger');
+  const previewBox = document.getElementById('bbtheme-preview-box');
+  const searchInput = document.getElementById('bbtheme-animation-search');
+  const codeSnippet = document.getElementById('bbtheme-animation-code-snippet');
+  const tabs = document.querySelectorAll('.bbtheme-animation-tabs .nav-tab');
+  const panels = document.querySelectorAll('.bbtheme-tab-panel');
+  const registry = (window.BBThemeAdminSettings && window.BBThemeAdminSettings.animationRegistry) || [];
 
-    if (tbody && (!tbody.children.length || tbody.textContent.trim() === '') && Array.isArray(registry) && registry.length) {
-      tbody.innerHTML = '';
-      registry.forEach((item) => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-search', ((item.group || '') + ' ' + (item.label || '') + ' ' + (item.class || '') + ' ' + (item.description || '')).toLowerCase());
-        tr.innerHTML = `
-          <td>${item.group || ''}</td>
-          <td><strong>${item.label || item.class || ''}</strong></td>
-          <td><code>${item.class || ''}</code></td>
-          <td>${item.description || ''}</td>
-          <td>
-            <button type="button" class="button button-secondary bbtheme-preview-row" data-animation="${item.class || ''}">Preview</button>
-            <button type="button" class="button button-link bbtheme-copy-class" data-class="${item.class || ''}">Copy class</button>
-            <button type="button" class="button button-link bbtheme-use-animation" data-class="${item.class || ''}">Use as default</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-    }
-
-    if (previewSelect && !previewSelect.options.length && Array.isArray(registry) && registry.length) {
-      let groups = {};
-      registry.forEach((item)=>{ (groups[item.group||'Other'] ||= []).push(item); });
-      Object.keys(groups).forEach((group)=>{
-        const optgroup=document.createElement('optgroup');
-        optgroup.label=group;
-        groups[group].forEach((item)=>{
-          const opt=document.createElement('option');
-          opt.value=item.class||'';
-          opt.textContent=item.label||item.class||'';
-          optgroup.appendChild(opt);
-        });
-        previewSelect.appendChild(optgroup);
-      });
-    }
-
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', function (event) {
-        event.preventDefault();
-        const hash = tab.getAttribute('href');
-        history.replaceState(null, '', hash);
-        showTab(hash);
-      });
-    });
-
-    function replayPreview(animationClass) {
-      if (!previewBox) return;
-      const className = animationClass || ((previewSelect && previewSelect.value) || (animationSelect && animationSelect.value) || 'animate__fadeInUp');
-      previewBox.className = 'wp-theme-animation-preview-box';
-      previewBox.classList.add('animate__animated');
-      previewBox.style.setProperty('--animate-duration', durationInput && durationInput.value ? durationInput.value : '1s');
-      previewBox.style.setProperty('--animate-delay', delayInput && delayInput.value ? delayInput.value : '0s');
-      previewBox.style.setProperty('--animate-repeat', repeatInput && repeatInput.value ? repeatInput.value : '1');
-      const text = previewTextInput && previewTextInput.value ? previewTextInput.value : (window.BBThemeAdminSettings?.strings?.defaultPreviewText || 'Animation preview');
-      previewBox.innerHTML = '<strong>' + text + '</strong><span>' + className + '</span>';
-      void previewBox.offsetWidth;
-      previewBox.classList.add(className);
-      if (codeSnippet) codeSnippet.textContent = '<div class="animate__animated ' + className + '">...</div>';
-    }
-
-    function bindLibraryActions() {
-      document.querySelectorAll('.bbtheme-preview-row').forEach((button) => {
-        if (button.dataset.bound) return;
-        button.dataset.bound = '1';
-        button.addEventListener('click', function () {
-          const animationClass = button.getAttribute('data-animation') || '';
-          if (previewSelect) previewSelect.value = animationClass;
-          if (animationSelect) animationSelect.value = animationClass;
-          replayPreview(animationClass);
-          showTab('#bbtheme-tab-preview');
-        });
-      });
-
-      document.querySelectorAll('.bbtheme-use-animation').forEach((button) => {
-        if (button.dataset.bound) return;
-        button.dataset.bound = '1';
-        button.addEventListener('click', function () {
-          const className = button.getAttribute('data-class') || '';
-          if (animationSelect) {
-            animationSelect.value = className;
-            animationSelect.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        });
-      });
-
-      document.querySelectorAll('.bbtheme-copy-class').forEach((button) => {
-        if (button.dataset.bound) return;
-        button.dataset.bound = '1';
-        button.addEventListener('click', async function () {
-          const className = button.getAttribute('data-class') || '';
-          try {
-            await navigator.clipboard.writeText(className);
-            button.classList.add('is-copied');
-            button.textContent = 'Copied';
-            setTimeout(function () {
-              button.classList.remove('is-copied');
-              button.textContent = 'Copy class';
-            }, 1400);
-          } catch (error) {
-            window.prompt('Copy class name:', className);
-          }
-        });
-      });
-    }
-
-    if (previewSelect) previewSelect.addEventListener('change', function () { replayPreview(previewSelect.value); });
-    [animationSelect, durationInput, delayInput, repeatInput, previewTextInput].forEach((node) => {
-      if (!node) return;
-      node.addEventListener('change', function () { replayPreview(); });
-      node.addEventListener('input', function () { replayPreview(); });
-    });
-    if (previewTrigger) previewTrigger.addEventListener('click', function () { replayPreview(); });
-
-    if (searchInput) {
-      searchInput.addEventListener('input', function () {
-        const term = searchInput.value.trim().toLowerCase();
-        document.querySelectorAll('.bbtheme-animation-table tbody tr').forEach((row) => {
-          const haystack = row.getAttribute('data-search') || '';
-          row.style.display = !term || haystack.indexOf(term) !== -1 ? '' : 'none';
-        });
-      });
-    }
-
-    bindLibraryActions();
-    if (window.location.hash && document.querySelector(window.location.hash)) showTab(window.location.hash);
-    replayPreview();
+  function showTab(hash) {
+    tabs.forEach((tab) => tab.classList.toggle('nav-tab-active', tab.getAttribute('href') === hash));
+    panels.forEach((panel) => panel.classList.toggle('is-active', '#' + panel.id === hash));
   }
+
+  if (previewSelect && previewSelect.options.length === 0 && Array.isArray(registry) && registry.length) {
+    const groups = {};
+    registry.forEach((item) => {
+      const group = item.group || 'Other';
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(item);
+    });
+    Object.keys(groups).forEach((group) => {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = group;
+      groups[group].forEach((item) => {
+        const opt = document.createElement('option');
+        opt.value = item.class || '';
+        opt.textContent = item.label || item.class || '';
+        optgroup.appendChild(opt);
+      });
+      previewSelect.appendChild(optgroup);
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', function (event) {
+      event.preventDefault();
+      const hash = tab.getAttribute('href');
+      history.replaceState(null, '', hash);
+      showTab(hash);
+    });
+  });
+
+  function replayPreview(animationClass) {
+    if (!previewBox) return;
+    const className = animationClass || ((previewSelect && previewSelect.value) || (animationSelect && animationSelect.value) || 'animate__fadeInUp');
+    previewBox.className = 'wp-theme-animation-preview-box animate__animated';
+    previewBox.style.setProperty('--animate-duration', durationInput && durationInput.value ? durationInput.value : '1s');
+    previewBox.style.setProperty('--animate-delay', delayInput && delayInput.value ? delayInput.value : '0s');
+    previewBox.style.setProperty('--animate-repeat', repeatInput && repeatInput.value ? repeatInput.value : '1');
+    const text = previewTextInput && previewTextInput.value ? previewTextInput.value : (window.BBThemeAdminSettings?.strings?.defaultPreviewText || 'Animation preview');
+    previewBox.innerHTML = '<strong>' + text + '</strong><span>' + className + '</span>';
+    void previewBox.offsetWidth;
+    previewBox.classList.add(className);
+    if (codeSnippet) codeSnippet.textContent = '<div class="animate__animated ' + className + '">...</div>';
+  }
+
+  document.querySelectorAll('.bbtheme-preview-row').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = '1';
+    button.addEventListener('click', function () {
+      const animationClass = button.getAttribute('data-animation') || '';
+      if (previewSelect) previewSelect.value = animationClass;
+      replayPreview(animationClass);
+      showTab('#bbtheme-tab-preview');
+    });
+  });
+
+  document.querySelectorAll('.bbtheme-use-animation').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = '1';
+    button.addEventListener('click', function () {
+      const className = button.getAttribute('data-class') || '';
+      if (animationSelect) animationSelect.value = className;
+      replayPreview(className);
+    });
+  });
+
+  document.querySelectorAll('.bbtheme-copy-class').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = '1';
+    button.addEventListener('click', async function () {
+      const className = button.getAttribute('data-class') || '';
+      try {
+        await navigator.clipboard.writeText(className);
+        button.textContent = 'Copied';
+        setTimeout(() => { button.textContent = 'Copy class'; }, 1200);
+      } catch (error) {
+        window.prompt('Copy class name:', className);
+      }
+    });
+  });
+
+  if (previewSelect) previewSelect.addEventListener('change', function () { replayPreview(previewSelect.value); });
+  [animationSelect, durationInput, delayInput, repeatInput, previewTextInput].forEach((node) => {
+    if (!node) return;
+    node.addEventListener('change', function () { replayPreview(); });
+    node.addEventListener('input', function () { replayPreview(); });
+  });
+  if (previewTrigger) previewTrigger.addEventListener('click', function () { replayPreview(); });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      const term = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.bbtheme-animation-table tbody tr').forEach((row) => {
+        const haystack = row.getAttribute('data-search') || '';
+        row.style.display = !term || haystack.indexOf(term) !== -1 ? '' : 'none';
+      });
+    });
+  }
+
+  if (window.location.hash && document.querySelector(window.location.hash)) {
+    showTab(window.location.hash);
+  } else {
+    showTab('#bbtheme-tab-general');
+  }
+  replayPreview();
+}
 
   function initMediaLibraryImport() {
     const toggleBtn = document.getElementById('wp-theme-toggle-free-images');
@@ -373,4 +351,46 @@ document.addEventListener('DOMContentLoaded', function () {
     initAnimationUI();
   }
   if (body.classList.contains('upload-php')) initMediaLibraryImport();
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const demoBtn = document.getElementById('wp-theme-import-demo-homepage');
+  const demoStatus = document.getElementById('wp-theme-demo-import-status');
+  if (!demoBtn) return;
+
+  demoBtn.addEventListener('click', function () {
+    demoBtn.disabled = true;
+    if (demoStatus) {
+      demoStatus.textContent = (window.BBThemeAdminSettings?.strings?.demoImportText) || 'Importing demo homepage…';
+    }
+
+    const formData = new FormData();
+    formData.append('action', 'wp_theme_import_demo_homepage');
+    formData.append('nonce', window.BBThemeAdminSettings?.nonce || '');
+
+    fetch(window.BBThemeAdminSettings.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData
+    })
+      .then((response) => response.json())
+      .then((payload) => {
+        if (!payload.success) {
+          throw new Error((payload.data && payload.data.message) || 'Import failed.');
+        }
+        let text = (payload.data && payload.data.message) || (window.BBThemeAdminSettings?.strings?.demoImportedText) || 'Demo homepage imported.';
+        if (payload.data && payload.data.editUrl) {
+          text += ' Edit: ' + payload.data.editUrl;
+        }
+        if (payload.data && payload.data.viewUrl) {
+          text += ' View: ' + payload.data.viewUrl;
+        }
+        if (demoStatus) demoStatus.textContent = text;
+      })
+      .catch((error) => {
+        if (demoStatus) demoStatus.textContent = error.message || 'Import failed.';
+        demoBtn.disabled = false;
+      });
+  });
 });

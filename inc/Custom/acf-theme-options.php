@@ -29,6 +29,18 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_section_spacing'      => 'clamp(2rem, 4vw, 5rem)',
             'theme_radius'               => '18px',
 
+            'media_glightbox'            => 'false',
+            'select2_js'                 => 'false',
+            'alpine_js'                  => 'false',
+            'theme_login_logo_enabled'   => 0,
+            'theme_login_logo'           => '',
+            'theme_login_logo_width'     => '160',
+            'theme_login_logo_height'    => '80',
+
+            'theme_general_cta_text'     => '',
+            'theme_general_cta_url'      => '',
+            'theme_general_notice'       => '',
+
             'theme_font_provider'        => 'system',
             'theme_body_font'            => "'Albert Sans', sans-serif",
             'theme_heading_font'         => "'Albert Sans', sans-serif",
@@ -400,22 +412,115 @@ if (!function_exists('wp_theme_register_style_fields')) {
         ]);
 
         
+        
         $fields[] = ['key'=>'tab_theme_general','label'=>'General','type'=>'tab'];
-        $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>Centralized general theme options kept on the ACF options store for easy use with get_field(\'option\').</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
-        $fields[] = ['key'=>'field_wp_general_group_note','label'=>'','name'=>'','type'=>'message','message'=>'<div class="wp-theme-mini-note">Use this tab for generic site-wide values you want available in patterns and templates.</div>','esc_html'=>0,'wrapper'=>['class'=>'wp-theme-settings-intro']];
-        $fields[] = ['key'=>'field_theme_general_cta_text','label'=>'Primary CTA Text','name'=>'theme_general_cta_text','type'=>'text','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_general_cta_url','label'=>'Primary CTA URL','name'=>'theme_general_cta_url','type'=>'url','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_general_notice','label'=>'Global Notice','name'=>'theme_general_notice','type'=>'text','wrapper'=>['width'=>'34']];
+        $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>General theme settings stored on the ACF options page for use with get_field(\'field_name\', \'option\').</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
+        $fields[] = ['key'=>'field_media_glightbox','label'=>'Enable Lightbox','name'=>'media_glightbox','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
+        $fields[] = ['key'=>'field_select2_js','label'=>'Enable Select2','name'=>'select2_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
+        $fields[] = ['key'=>'field_alpine_js','label'=>'Enable Alpine JS','name'=>'alpine_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'34']];
+        $fields[] = ['key'=>'field_theme_login_logo_enabled','label'=>'Replace Admin Login Logo','name'=>'theme_login_logo_enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'25']];
+        $fields[] = ['key'=>'field_theme_login_logo','label'=>'Login Logo Image','name'=>'theme_login_logo','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','wrapper'=>['width'=>'45']];
+        $fields[] = ['key'=>'field_theme_login_logo_width','label'=>'Logo Width','name'=>'theme_login_logo_width','type'=>'text','default_value'=>'160','wrapper'=>['width'=>'15']];
+        $fields[] = ['key'=>'field_theme_login_logo_height','label'=>'Logo Height','name'=>'theme_login_logo_height','type'=>'text','default_value'=>'80','wrapper'=>['width'=>'15']];
 
-        $fields[] = ['key'=>'tab_theme_acf_hero','label'=>'ACF Hero','type'=>'tab'];
-        $fields[] = ['key' => 'msg_theme_hero_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Hero defaults</strong><br><span>Default hero values for ACF hero sections and patterns.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
-        $fields[] = ['key'=>'field_theme_hero_eyebrow','label'=>'Hero Eyebrow','name'=>'theme_hero_eyebrow','type'=>'text','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_hero_title','label'=>'Hero Title','name'=>'theme_hero_title','type'=>'text','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_hero_text','label'=>'Hero Text','name'=>'theme_hero_text','type'=>'textarea','rows'=>4,'wrapper'=>['width'=>'34']];
-        $fields[] = ['key'=>'field_theme_hero_button_text','label'=>'Hero Button Text','name'=>'theme_hero_button_text','type'=>'text','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_hero_button_url','label'=>'Hero Button URL','name'=>'theme_hero_button_url','type'=>'url','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_hero_secondary_text','label'=>'Hero Secondary Text','name'=>'theme_hero_secondary_text','type'=>'text','wrapper'=>['width'=>'34']];
-
+        
+        $fields[] = ['key'=>'tab_theme_acf_hero','label'=>'Custom Heros','type'=>'tab'];
+$fields[] = ['key' => 'msg_theme_hero_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Custom Heros ( Archive &amp; uneditable pages )</strong><br><span>ID shortcode: [custom_hero_shop] = shop</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
+$fields[] = [
+    'key' => 'field_69047f82c3029',
+    'label' => 'Custom Heros ( Archive & uneditable pages )',
+    'name' => 'custom_heros',
+    'type' => 'repeater',
+    'instructions' => 'ID shortcode: [custom_hero_shop] = shop',
+    'required' => 0,
+    'conditional_logic' => 0,
+    'wrapper' => ['width' => '', 'class' => '', 'id' => ''],
+    'layout' => 'table',
+    'pagination' => 0,
+    'min' => 0,
+    'max' => 0,
+    'collapsed' => '',
+    'button_label' => 'Add Row',
+    'rows_per_page' => 20,
+    'sub_fields' => [
+        [
+            'key' => 'field_6904813159747',
+            'label' => 'Hero ID',
+            'name' => 'hero_id',
+            'type' => 'text',
+            'wrapper' => ['width' => '10', 'class' => '', 'id' => ''],
+            'default_value' => '',
+            'maxlength' => '',
+            'allow_in_bindings' => 0,
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+        ],
+        [
+            'key' => 'field_69047f06c3026',
+            'label' => 'Hero Section Background',
+            'name' => 'hero_sec_background',
+            'type' => 'image',
+            'wrapper' => ['width' => '20', 'class' => '', 'id' => ''],
+            'return_format' => 'url',
+            'library' => 'all',
+            'min_width' => '',
+            'min_height' => '',
+            'min_size' => '',
+            'max_width' => '',
+            'max_height' => '',
+            'max_size' => '',
+            'mime_types' => '',
+            'allow_in_bindings' => 0,
+            'preview_size' => 'medium',
+        ],
+        [
+            'key' => 'field_69047f35c3027',
+            'label' => 'Hero Section Caption',
+            'name' => 'hero_sec_caption',
+            'type' => 'text',
+            'required' => 0,
+            'conditional_logic' => [
+                [
+                    [
+                        'field' => 'field_690484c92a38f',
+                        'operator' => '!=',
+                        'value' => '1',
+                    ],
+                ],
+            ],
+            'wrapper' => ['width' => '20', 'class' => '', 'id' => ''],
+            'default_value' => '',
+            'maxlength' => '',
+            'allow_in_bindings' => 0,
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+        ],
+        [
+            'key' => 'field_6904804cdac82',
+            'label' => 'Hero Section Text',
+            'name' => 'hero_sec_txt',
+            'type' => 'textarea',
+            'wrapper' => ['width' => '25', 'class' => '', 'id' => ''],
+            'default_value' => '',
+            'maxlength' => '',
+            'allow_in_bindings' => 1,
+            'rows' => '',
+            'placeholder' => '',
+            'new_lines' => 'br',
+        ],
+        [
+            'key' => 'field_69047fc9c302a',
+            'label' => 'Hero Button',
+            'name' => 'hero_sec_button',
+            'type' => 'link',
+            'wrapper' => ['width' => '11', 'class' => '', 'id' => ''],
+            'return_format' => 'array',
+            'allow_in_bindings' => 0,
+        ],
+    ],
+];
 
 $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_layout_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Spacing & Containers</strong>', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
@@ -502,16 +607,21 @@ $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
             ['key' => 'msg_theme_animation_full_ui', 'label' => '', 'name' => '', 'type' => 'message', 'message' => wp_theme_animation_settings_markup(), 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-animation-ui-wrap']],
         ]);
 
+        
+        $fields[] = ['key'=>'tab_theme_demo_import','label'=>'Demo Import','type'=>'tab'];
+        $fields[] = ['key' => 'msg_theme_demo_import_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Homepage demo import</strong><br><span>Runs a first demo homepage in the theme and uses WP BBuilder plugin blocks if the plugin is available.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
+        $fields[] = ['key' => 'msg_theme_demo_import_ui', 'label' => '', 'name' => '', 'type' => 'message', 'message' => wp_theme_demo_import_markup(), 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-demo-import-wrap']];
+
         $fields[] = ['key'=>'tab_theme_media','label'=>'Media','type'=>'tab'];
-        $fields[] = ['key' => 'msg_theme_media_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Import optimization</strong><br><span>Compact defaults for imported and uploaded images.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
+        $fields[] = ['key' => 'msg_theme_media_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Import optimization</strong><br><span>Free Images Import uses these defaults when bringing images into the Media Library.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
-            ['key'=>'field_theme_media_convert_to_avif','label'=>'Convert imports to AVIF when possible','name'=>'theme_media_convert_to_avif','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_media_max_width','label'=>'Maximum import width','name'=>'theme_media_max_width','type'=>'text','default_value'=>'1920','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_media_quality','label'=>'Image quality','name'=>'theme_media_quality','type'=>'text','default_value'=>'82','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_media_size_xl','label'=>'XL size','name'=>'theme_media_size_xl','type'=>'text','default_value'=>'1920','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_media_size_lg','label'=>'Large size','name'=>'theme_media_size_lg','type'=>'text','default_value'=>'1600','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_media_size_md','label'=>'Medium size','name'=>'theme_media_size_md','type'=>'text','default_value'=>'960','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_media_size_sm','label'=>'Small size','name'=>'theme_media_size_sm','type'=>'text','default_value'=>'480','wrapper'=>['width'=>'25']],
+            ['key'=>'field_theme_media_convert_to_avif','label'=>'AVIF','name'=>'theme_media_convert_to_avif','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'14','class'=>'wp-theme-media-compact']],
+            ['key'=>'field_theme_media_max_width','label'=>'Max Width','name'=>'theme_media_max_width','type'=>'text','default_value'=>'1920','wrapper'=>['width'=>'14','class'=>'wp-theme-media-compact']],
+            ['key'=>'field_theme_media_quality','label'=>'Quality','name'=>'theme_media_quality','type'=>'text','default_value'=>'82','wrapper'=>['width'=>'14','class'=>'wp-theme-media-compact']],
+            ['key'=>'field_theme_media_size_xl','label'=>'XL','name'=>'theme_media_size_xl','type'=>'text','default_value'=>'1920','wrapper'=>['width'=>'14','class'=>'wp-theme-media-compact']],
+            ['key'=>'field_theme_media_size_lg','label'=>'LG','name'=>'theme_media_size_lg','type'=>'text','default_value'=>'1600','wrapper'=>['width'=>'14','class'=>'wp-theme-media-compact']],
+            ['key'=>'field_theme_media_size_md','label'=>'MD','name'=>'theme_media_size_md','type'=>'text','default_value'=>'960','wrapper'=>['width'=>'15','class'=>'wp-theme-media-compact']],
+            ['key'=>'field_theme_media_size_sm','label'=>'SM','name'=>'theme_media_size_sm','type'=>'text','default_value'=>'480','wrapper'=>['width'=>'15','class'=>'wp-theme-media-compact']],
         ]);
 
         acf_add_local_field_group([
@@ -785,7 +895,8 @@ if (!function_exists('wp_theme_render_media_free_images_panel')) {
         <div class="wrap wp-theme-media-tools-wrap">
             <div class="wp-theme-media-tools">
                 <button type="button" class="button button-primary button-hero" id="wp-theme-toggle-free-images"><?php esc_html_e('Free Images Import', 'wp-theme'); ?></button>
-                <p class="description"><?php echo esc_html(sprintf(__('Compact import mode · max %spx · AVIF %s · quality %s.', 'wp-theme'), $tokens['theme_media_max_width'], !empty($tokens['theme_media_convert_to_avif']) ? __('on', 'wp-theme') : __('off', 'wp-theme'), $tokens['theme_media_quality'])); ?></p>
+                <p class="description"><?php esc_html_e('Search public free image sources and import directly into the Media Library. Quick links open other libraries in a new tab.', 'wp-theme'); ?></p>
+                <p class="description"><?php echo esc_html(sprintf(__('Optimization defaults: max width %spx, AVIF %s, quality %s.', 'wp-theme'), $tokens['theme_media_max_width'], !empty($tokens['theme_media_convert_to_avif']) ? __('on when supported', 'wp-theme') : __('off', 'wp-theme'), $tokens['theme_media_quality'])); ?></p>
             </div>
 
             <div id="wp-theme-free-images-panel" class="wp-theme-free-images-panel" hidden>
@@ -1069,6 +1180,8 @@ if (!function_exists('wp_theme_enqueue_admin_assets')) {
                     'copyLabel' => __('Copy class', 'wp-theme'),
                     'copiedLabel' => __('Copied', 'wp-theme'),
                     'defaultPreviewText' => __('Animation preview', 'wp-theme'),
+                    'demoImportText' => __('Importing demo homepage…', 'wp-theme'),
+                    'demoImportedText' => __('Demo homepage imported and set as front page.', 'wp-theme'),
                 ],
             ]);
         }
@@ -1159,3 +1272,246 @@ if (!function_exists('wp_theme_remove_legacy_options_menus')) {
     }
 }
 add_action('admin_menu', 'wp_theme_remove_legacy_options_menus', 999);
+
+
+if (!function_exists('wp_theme_demo_import_markup')) {
+    function wp_theme_demo_import_markup() {
+        ob_start();
+        ?>
+        <div class="wp-theme-demo-import-ui">
+            <div class="wp-theme-demo-import-card">
+                <h3><?php esc_html_e('Import & run first demo', 'wp-theme'); ?></h3>
+                <p><?php esc_html_e('Creates or updates a Demo Homepage page, sets it as the front page, and uses WP BBuilder plugin blocks where available.', 'wp-theme'); ?></p>
+                <div class="wp-theme-demo-import-grid">
+                    <div><strong><?php esc_html_e('Included sections', 'wp-theme'); ?></strong><div><?php esc_html_e('Header, Hero, Logos, Features, How It Works, Products/Services, Testimonials, Pricing, FAQ, Blog, CTA, Footer.', 'wp-theme'); ?></div></div>
+                    <div><strong><?php esc_html_e('Block usage', 'wp-theme'); ?></strong><div><?php esc_html_e('Uses WP BBuilder rows, columns, buttons, accordion, CTA section, and blog filter blocks.', 'wp-theme'); ?></div></div>
+                </div>
+                <p>
+                    <button type="button" class="button button-primary button-hero" id="wp-theme-import-demo-homepage"><?php esc_html_e('Import & Run First Demo', 'wp-theme'); ?></button>
+                </p>
+                <p class="description" id="wp-theme-demo-import-status"><?php esc_html_e('You can run this multiple times. The page slug stays demo-homepage.', 'wp-theme'); ?></p>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+}
+
+
+if (!function_exists('wp_theme_demo_homepage_content')) {
+    function wp_theme_demo_homepage_content() {
+        return <<<'HTML'
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-center wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/column {"xs":12,"md":7} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Standard Business / SaaS</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Build a cleaner SaaS website with WP BBuilder-powered sections.</h1><!-- /wp:heading -->
+<!-- wp:paragraph {"className":"wp-theme-demo-copy"} --><p class="wp-theme-demo-copy">A polished starter demo with hero, trust logos, features, pricing, FAQ, blog, and CTA — ready to customize with Bootstrap-friendly blocks.</p><!-- /wp:paragraph -->
+<!-- wp:wpbb/button {"text":"Start Free Trial","url":"#pricing","btnClass":"btn btn-primary px-4 py-2 me-2"} /-->
+<!-- wp:wpbb/button {"text":"See Pricing","url":"#pricing","btnClass":"btn btn-outline-dark px-4 py-2"} /-->
+<!-- wp:html --><div class="row g-3 mt-4"><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>12k+</strong><br/>active users</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>42%</strong><br/>faster onboarding</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>99.9%</strong><br/>uptime target</div></div></div><!-- /wp:html -->
+<!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":5} -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/960x680/e2e8f0/0f172a?text=SaaS+Dashboard" alt="Dashboard preview"/></figure><!-- /wp:image -->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container pb-5 wp-theme-demo-homepage text-center"} -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+1" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+2" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+3" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+4" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+5" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+6" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Features</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Everything you need to launch a modern business site.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Reusable blocks</h4><p>Mix Gutenberg content with structured builder blocks for faster editing.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Bootstrap layout</h4><p>Rows, columns, utilities, and spacing stay consistent across the site.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Conversion flow</h4><p>Pricing, FAQ, testimonials, blog, and CTA sections work together.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">How It Works</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Go from idea to launch in three steps.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":8} --><!-- wp:wpbb/timeline {"title":"Timeline","layout":"vertical","itemsJson":"[{"date":"Step 1","title":"Setup","text":"Install blocks, choose styles, and import the demo."},{"date":"Step 2","title":"Customize","text":"Replace content, logos, pricing, and brand visuals."},{"date":"Step 3","title":"Publish","text":"Set the page live and refine each section over time."}]"} /--><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"pricing"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/pricecards {"title":"Pricing","currency":"£","styleVariant":"default","cardsJson":"[{"title":"Starter","price":"29","period":"/mo","text":"Core pages, forms, and analytics.","button":"Choose plan","featured":false},{"title":"Growth","price":"99","period":"/mo","text":"Automation, CRM, and advanced reporting.","button":"Choose plan","featured":true},{"title":"Scale","price":"Custom","period":"","text":"Bespoke onboarding, support, and optimization.","button":"Contact sales","featured":false}]","showFeatured":true} /--><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">FAQ</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Frequently asked questions</h2><!-- /wp:heading --><!-- wp:wpbb/accordion {"flush":false} --><!-- wp:wpbb/accordion-item {"title":"Can I use this as my first live homepage?"} --><p>Yes. Import it, replace the placeholder copy, and set the page as your front page.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Does this use WP BBuilder blocks?"} --><p>Yes. The demo uses WP BBuilder rows, columns, buttons, accordion, CTA section, blog filter, and dynamic form blocks where available.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Can I swap sections out later?"} --><p>Absolutely. Each section is modular and can be edited or replaced independently.</p><!-- /wp:wpbb/accordion-item --><!-- /wp:wpbb/accordion --><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/blog-filter {"title":"Latest Posts","postsToShow":3,"buttonText":"Filter"} /--><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"cta"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/cta-section {"title":"Ready to launch your new homepage?","text":"Import the layout, replace the content, and start publishing with a cleaner workflow.","buttonText":"Request Demo","buttonUrl":"#"} /--><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+HTML;
+    }
+}
+
+if (!function_exists('wp_theme_demo_blog_post_content')) {
+    function wp_theme_demo_blog_post_content($index = 1) {
+        return '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus commodo, libero sit amet feugiat posuere, mauris arcu sodales turpis, sed bibendum enim nisl vel justo.</p><!-- /wp:paragraph -->'
+            . '<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1200x700/e2e8f0/0f172a?text=Demo+Post+' . intval($index) . '" alt="Demo post"/></figure><!-- /wp:image -->'
+            . '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Section heading</h3><!-- /wp:heading -->'
+            . '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec at arcu non risus laoreet iaculis. Integer ut augue nisl. Integer interdum sem quis arcu porta, et feugiat dui finibus.</p><!-- /wp:paragraph -->'
+            . '<!-- wp:list --><ul><li>First benefit point</li><li>Second benefit point</li><li>Third benefit point</li></ul><!-- /wp:list -->';
+    }
+}
+
+if (!function_exists('wp_theme_demo_about_page_content')) {
+    function wp_theme_demo_about_page_content() {
+        return <<<'HTML'
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5"} -->
+<!-- wp:wpbb/column {"xs":12,"md":6} -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x700/e2e8f0/0f172a?text=About+Us" alt="About us"/></figure><!-- /wp:image -->
+<!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":6} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">About</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">A simple story, told with clean blocks.</h1><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec magna justo. Sed posuere sem vel leo feugiat, ac mattis nunc maximus.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras in purus in orci pharetra tempor sed at nunc.</p><!-- /wp:paragraph -->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5"} -->
+<!-- wp:wpbb/column {"xs":12} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Timeline</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Milestones</h2><!-- /wp:heading -->
+<!-- wp:html --><div class="row g-4"><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2019</strong><p>Company founded and first service offer launched.</p></div></div><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2022</strong><p>Expanded into productized services and platform workflows.</p></div></div><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2026</strong><p>New modern marketing site and reusable content system released.</p></div></div></div><!-- /wp:html -->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+HTML;
+    }
+}
+
+if (!function_exists('wp_theme_demo_contact_page_content')) {
+    function wp_theme_demo_contact_page_content() {
+        return <<<'HTML'
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-start"} -->
+<!-- wp:wpbb/column {"xs":12,"md":5} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Contact</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Let’s talk about your project.</h1><!-- /wp:heading -->
+<!-- wp:html --><div class="wp-theme-demo-card"><p><strong>Email</strong><br/>hello@example.com</p><p><strong>Phone</strong><br/>+44 0000 000000</p><p><strong>Address</strong><br/>123 Business Street, London</p></div><!-- /wp:html -->
+<!-- wp:wpbb/dynamic-form {"showTitle":true,"formTitle":"Send us a message"} /-->
+<!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":7} -->
+<!-- wp:embed {"url":"https://www.google.com/maps?q=London&output=embed","type":"rich","providerNameSlug":"google"} -->
+<figure class="wp-block-embed is-type-rich is-provider-google wp-block-embed-google"><div class="wp-block-embed__wrapper">https://www.google.com/maps?q=London&output=embed</div></figure>
+<!-- /wp:embed -->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+HTML;
+    }
+}
+
+if (!function_exists('wp_theme_seed_demo_blog_posts')) {
+    function wp_theme_seed_demo_blog_posts() {
+        for ($i = 1; $i <= 5; $i++) {
+            $slug = 'demo-blog-post-' . $i;
+            $existing = get_page_by_path($slug, OBJECT, 'post');
+            $args = [
+                'post_title'   => 'Demo Blog Post ' . $i,
+                'post_name'    => $slug,
+                'post_status'  => 'publish',
+                'post_type'    => 'post',
+                'post_content' => wp_theme_demo_blog_post_content($i),
+            ];
+            if ($existing instanceof WP_Post) {
+                $args['ID'] = $existing->ID;
+                wp_update_post($args);
+            } else {
+                wp_insert_post($args);
+            }
+        }
+    }
+}
+
+if (!function_exists('wp_theme_seed_demo_pages')) {
+    function wp_theme_seed_demo_pages() {
+        $pages = [
+            'about' => ['title' => 'About', 'content' => wp_theme_demo_about_page_content()],
+            'contact' => ['title' => 'Contact', 'content' => wp_theme_demo_contact_page_content()],
+        ];
+
+        foreach ($pages as $slug => $data) {
+            $existing = get_page_by_path($slug);
+            $args = [
+                'post_title'   => $data['title'],
+                'post_name'    => $slug,
+                'post_status'  => 'publish',
+                'post_type'    => 'page',
+                'post_content' => $data['content'],
+            ];
+            if ($existing instanceof WP_Post) {
+                $args['ID'] = $existing->ID;
+                wp_update_post($args);
+            } else {
+                wp_insert_post($args);
+            }
+        }
+    }
+}
+
+if (!function_exists('wp_theme_import_demo_homepage')) {
+    function wp_theme_import_demo_homepage() {
+        $page = get_page_by_path('demo-homepage');
+        $args = [
+            'post_title'   => 'Demo Homepage',
+            'post_name'    => 'demo-homepage',
+            'post_status'  => 'publish',
+            'post_type'    => 'page',
+            'post_content' => wp_theme_demo_homepage_content(),
+        ];
+
+        if ($page instanceof WP_Post) {
+            $args['ID'] = $page->ID;
+            $page_id = wp_update_post($args, true);
+        } else {
+            $page_id = wp_insert_post($args, true);
+        }
+
+        if (is_wp_error($page_id)) {
+            return $page_id;
+        }
+
+        wp_theme_seed_demo_blog_posts();
+        wp_theme_seed_demo_pages();
+
+        update_post_meta($page_id, '_wp_theme_demo_homepage', 1);
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', (int) $page_id);
+
+        return $page_id;
+    }
+}
+
+if (!function_exists('wp_theme_ajax_import_demo_homepage')) {
+    function wp_theme_ajax_import_demo_homepage() {
+        check_ajax_referer('wp_theme_settings_nonce', 'nonce');
+
+        if (!current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => __('Permission denied.', 'wp-theme')], 403);
+        }
+
+        $page_id = wp_theme_import_demo_homepage();
+        if (is_wp_error($page_id)) {
+            wp_send_json_error(['message' => $page_id->get_error_message()], 500);
+        }
+
+        wp_send_json_success([
+            'pageId' => $page_id,
+            'editUrl' => get_edit_post_link($page_id, 'raw'),
+            'viewUrl' => get_permalink($page_id),
+            'message' => __('Demo homepage, 5 demo blog posts, About page, and Contact page imported.', 'wp-theme'),
+        ]);
+    }
+}
+add_action('wp_ajax_wp_theme_import_demo_homepage', 'wp_theme_ajax_import_demo_homepage');
+

@@ -15,8 +15,8 @@ Tags: block-patterns, full-site-editing, custom-colors, custom-logo, custom-menu
 */
 
 :root {
-  --wp-content-width: 840px;
-  --wp-container-width: 1280px;
+  --wp-content-width: 1280px;
+  --wp-container-width: 1400px;
   --wp-theme-radius: 18px;
   --wp-theme-radius-sm: 10px;
   --wp-theme-gap: clamp(1rem, 2vw, 1.5rem);
@@ -94,4 +94,17 @@ img { height: auto; }
 @media (max-width: 640px) {
   .wp-theme-grid--3, .wp-theme-grid--2 { grid-template-columns: 1fr; }
   .wp-theme-header-actions, .wp-theme-header-top { width: 100%; justify-content: flex-start; }
+}
+
+
+/* Full-width main content: Bootstrap containers control width */
+#wp-theme-main,
+#wp-theme-main.wp-block-group,
+main#wp-theme-main {
+  max-width: none;
+  width: 100%;
+}
+#wp-theme-main > .alignwide,
+#wp-theme-main > .alignfull {
+  max-width: none;
 }
