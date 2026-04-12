@@ -32,10 +32,20 @@ if (!function_exists('wp_theme_style_defaults')) {
             'media_glightbox'            => 'false',
             'select2_js'                 => 'false',
             'alpine_js'                  => 'false',
+            'theme_enable_post_ordering'  => 1,
+            'theme_enable_post_ordering_products' => 0,
+            'theme_enable_post_ordering_case_study' => 0,
+            'theme_enable_post_ordering_testimonial' => 0,
+            'theme_enable_cpt_megamenu'  => 0,
             'theme_login_logo_enabled'   => 0,
             'theme_login_logo'           => '',
             'theme_login_logo_width'     => '160',
             'theme_login_logo_height'    => '80',
+            'theme_media_lazyload_images' => 1,
+            'theme_media_alt_from_filename' => 1,
+            'theme_media_add_dimensions' => 1,
+            'theme_header_menu_mode' => 'dropdown',
+            'theme_enable_frontend_cache_headers' => 1,
 
             'theme_general_cta_text'     => '',
             'theme_general_cta_url'      => '',
@@ -93,7 +103,10 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_custom_colors'        => [],
 
             'theme_anim_enabled'         => 1,
-            'theme_anim_default_class'   => 'animate__fadeInUp',
+            'theme_anim_library'         => 'bbtheme-core',
+            'theme_anim_custom_library_url' => '',
+            'theme_anim_enabled_classes' => ['fade-in','fade-in-up','fade-in-down','fade-in-left','fade-in-right'],
+            'theme_anim_default_class'   => 'fade-in-up',
             'theme_anim_duration'        => '1s',
             'theme_anim_delay'           => '0s',
             'theme_anim_repeat'          => '1',
@@ -101,6 +114,12 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_anim_reduce_motion'   => 1,
             'theme_anim_custom_class'    => '',
             'theme_anim_preview_text'    => 'Animation preview',
+            'theme_anim_preset_hero'     => 'fade-in-up',
+            'theme_anim_preset_heading'  => 'fade-in-up',
+            'theme_anim_preset_text'     => 'fade-in',
+            'theme_anim_preset_media'    => 'fade-in-right',
+            'theme_anim_preset_card'     => 'fade-in-up',
+            'theme_anim_preset_button'   => 'fade-in',
 
             'theme_motion_enable_lottie' => 0,
             'theme_motion_lottie_url'    => '',
@@ -238,6 +257,7 @@ if (!function_exists('wp_theme_animation_settings_markup')) {
                 <a href="#bbtheme-tab-general" class="nav-tab nav-tab-active"><?php esc_html_e('General', 'wp-theme'); ?></a>
                 <a href="#bbtheme-tab-preview" class="nav-tab"><?php esc_html_e('Preview', 'wp-theme'); ?></a>
                 <a href="#bbtheme-tab-library" class="nav-tab"><?php esc_html_e('Library', 'wp-theme'); ?></a>
+                <a href="#bbtheme-tab-demos" class="nav-tab"><?php esc_html_e('Ready demos', 'wp-theme'); ?></a>
                 <a href="#bbtheme-tab-integration" class="nav-tab"><?php esc_html_e('Integration', 'wp-theme'); ?></a>
             </h2>
 
@@ -248,6 +268,14 @@ if (!function_exists('wp_theme_animation_settings_markup')) {
                         <p><?php esc_html_e('Use the fields above to set global animation defaults. The preview and library below read those same fields live.', 'wp-theme'); ?></p>
                     </div>
                     <div class="bbtheme-card">
+                        <h3><?php esc_html_e('CSS animation libraries', 'wp-theme'); ?></h3>
+                        <p><?php esc_html_e('Animate.css is the built-in preset library for the ready class picker. You can also load Magic Animations, Hover.css, or a custom stylesheet URL for extra animation classes in the theme.', 'wp-theme'); ?></p>
+                        <div class="wp-theme-helper-links">
+                            <a class="button button-secondary" href="https://animate.style/" target="_blank" rel="noopener"><?php esc_html_e('Browse Animate.css', 'wp-theme'); ?></a>
+                            <a class="button button-secondary" href="https://www.minimamente.com/project/magic/" target="_blank" rel="noopener"><?php esc_html_e('Browse Magic Animations', 'wp-theme'); ?></a>
+                            <a class="button button-secondary" href="https://ianlunn.github.io/Hover/" target="_blank" rel="noopener"><?php esc_html_e('Browse Hover.css', 'wp-theme'); ?></a>
+                        </div>
+                        <hr style="margin:16px 0;">
                         <h3><?php esc_html_e('Optional motion formats', 'wp-theme'); ?></h3>
                         <p><?php esc_html_e('Lottie and SVG motion stay optional. Keep them off and the theme will not load their support files.', 'wp-theme'); ?></p>
                         <div class="wp-theme-helper-links">
@@ -331,8 +359,52 @@ if (!function_exists('wp_theme_animation_settings_markup')) {
                 </div>
             </div>
 
+
+            <div id="bbtheme-tab-demos" class="bbtheme-tab-panel">
+                <div class="bbtheme-grid bbtheme-grid--narrow">
+                    <?php $demo_sets = function_exists('bbtheme_get_ready_animation_demo_sets') ? bbtheme_get_ready_animation_demo_sets() : []; ?>
+                    <?php foreach ($demo_sets as $demo_key => $demo) : ?>
+                        <div class="bbtheme-card bbtheme-demo-card">
+                            <div class="bbtheme-demo-card__top">
+                                <div>
+                                    <h3><?php echo esc_html($demo['label'] ?? $demo_key); ?></h3>
+                                    <p><?php echo esc_html($demo['description'] ?? ''); ?></p>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="button button-primary bbtheme-apply-demo"
+                                    data-demo="<?php echo esc_attr($demo_key); ?>"
+                                    data-hero="<?php echo esc_attr($demo['hero'] ?? ''); ?>"
+                                    data-heading="<?php echo esc_attr($demo['heading'] ?? ''); ?>"
+                                    data-text="<?php echo esc_attr($demo['text'] ?? ''); ?>"
+                                    data-media="<?php echo esc_attr($demo['media'] ?? ''); ?>"
+                                    data-card="<?php echo esc_attr($demo['card'] ?? ''); ?>"
+                                    data-button="<?php echo esc_attr($demo['button'] ?? ''); ?>"
+                                ><?php esc_html_e('Apply demo', 'wp-theme'); ?></button>
+                            </div>
+                            <div class="bbtheme-demo-slot-list">
+                                <span><strong><?php esc_html_e('Hero', 'wp-theme'); ?>:</strong> <code><?php echo esc_html($demo['hero'] ?? ''); ?></code></span>
+                                <span><strong><?php esc_html_e('Heading', 'wp-theme'); ?>:</strong> <code><?php echo esc_html($demo['heading'] ?? ''); ?></code></span>
+                                <span><strong><?php esc_html_e('Text', 'wp-theme'); ?>:</strong> <code><?php echo esc_html($demo['text'] ?? ''); ?></code></span>
+                                <span><strong><?php esc_html_e('Media', 'wp-theme'); ?>:</strong> <code><?php echo esc_html($demo['media'] ?? ''); ?></code></span>
+                                <span><strong><?php esc_html_e('Card', 'wp-theme'); ?>:</strong> <code><?php echo esc_html($demo['card'] ?? ''); ?></code></span>
+                                <span><strong><?php esc_html_e('Button', 'wp-theme'); ?>:</strong> <code><?php echo esc_html($demo['button'] ?? ''); ?></code></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
             <div id="bbtheme-tab-integration" class="bbtheme-tab-panel">
                 <div class="bbtheme-grid bbtheme-grid--narrow">
+                    <div class="bbtheme-card">
+                        <h3><?php esc_html_e('Theme slot helper', 'wp-theme'); ?></h3>
+<pre>&lt;div &lt;?php echo bbtheme_get_theme_animation_attributes_by_slot('hero', [
+    'delay' =&gt; '150ms',
+]); ?&gt;&gt;
+    Hero content here
+&lt;/div&gt;</pre>
+                    </div>
                     <div class="bbtheme-card">
                         <h3><?php esc_html_e('Animate.css helper', 'wp-theme'); ?></h3>
 <pre>&lt;div &lt;?php echo bbtheme_get_animation_attributes([
@@ -414,16 +486,27 @@ if (!function_exists('wp_theme_register_style_fields')) {
         
         
         $fields[] = ['key'=>'tab_theme_general','label'=>'General','type'=>'tab'];
-        $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>General theme settings stored on the ACF options page for use with get_field(\'field_name\', \'option\').</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
-        $fields[] = ['key'=>'field_media_glightbox','label'=>'Enable Lightbox','name'=>'media_glightbox','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_select2_js','label'=>'Enable Select2','name'=>'select2_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_alpine_js','label'=>'Enable Alpine JS','name'=>'alpine_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'34']];
-        $fields[] = ['key'=>'field_theme_login_logo_enabled','label'=>'Replace Admin Login Logo','name'=>'theme_login_logo_enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'25']];
-        $fields[] = ['key'=>'field_theme_login_logo','label'=>'Login Logo Image','name'=>'theme_login_logo','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','wrapper'=>['width'=>'45']];
-        $fields[] = ['key'=>'field_theme_login_logo_width','label'=>'Logo Width','name'=>'theme_login_logo_width','type'=>'text','default_value'=>'160','wrapper'=>['width'=>'15']];
-        $fields[] = ['key'=>'field_theme_login_logo_height','label'=>'Logo Height','name'=>'theme_login_logo_height','type'=>'text','default_value'=>'80','wrapper'=>['width'=>'15']];
+        $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>Login logo first, then compact feature toggles. Use ON/OFF switches to enable only the modules you need.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
+        $fields[] = ['key' => 'msg_theme_login_logo_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Admin login logo</strong><br><span>Upload a logo for the WordPress login screen and adjust its size if needed.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro wp-theme-settings-intro--subtle']];
+        $fields[] = ['key'=>'field_theme_login_logo_enabled','label'=>'Replace Admin Login Logo','name'=>'theme_login_logo_enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'20','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_login_logo','label'=>'Login Logo Image','name'=>'theme_login_logo','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','instructions'=>'Browse or upload the admin login logo image.','wrapper'=>['width'=>'50','class'=>'wp-theme-settings-card wp-theme-login-logo-field'],'conditional_logic'=>[[['field'=>'field_theme_login_logo_enabled','operator'=>'==','value'=>'1']]]];
+        $fields[] = ['key'=>'field_theme_login_logo_width','label'=>'Logo Width','name'=>'theme_login_logo_width','type'=>'text','default_value'=>'160','instructions'=>'Example: 160','wrapper'=>['width'=>'15','class'=>'wp-theme-settings-card wp-theme-login-size-field'],'conditional_logic'=>[[['field'=>'field_theme_login_logo_enabled','operator'=>'==','value'=>'1']]]];
+        $fields[] = ['key'=>'field_theme_login_logo_height','label'=>'Logo Height','name'=>'theme_login_logo_height','type'=>'text','default_value'=>'80','instructions'=>'Example: 80','wrapper'=>['width'=>'15','class'=>'wp-theme-settings-card wp-theme-login-size-field'],'conditional_logic'=>[[['field'=>'field_theme_login_logo_enabled','operator'=>'==','value'=>'1']]]];
+        $fields[] = ['key' => 'msg_theme_general_toggles_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Feature modules</strong><br><span>Turn on only the modules you need. Switches keep the original ACF look, just in a tighter layout.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro wp-theme-settings-intro--subtle']];
+        $fields[] = ['key'=>'field_media_glightbox','label'=>'Lightbox','name'=>'media_glightbox','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_select2_js','label'=>'Select2','name'=>'select2_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_alpine_js','label'=>'Alpine JS','name'=>'alpine_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_enable_post_ordering','label'=>'Post Ordering','name'=>'theme_enable_post_ordering','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_enable_post_ordering_products','label'=>'Products CPT','name'=>'theme_enable_post_ordering_products','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_enable_post_ordering_case_study','label'=>'Case Study CPT','name'=>'theme_enable_post_ordering_case_study','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_enable_post_ordering_testimonial','label'=>'Testimonial CPT','name'=>'theme_enable_post_ordering_testimonial','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_enable_cpt_megamenu','label'=>'Megamenu CPT','name'=>'theme_enable_cpt_megamenu','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+$fields[] = ['key'=>'field_theme_media_lazyload_images','label'=>'Lazy Load Images','name'=>'theme_media_lazyload_images','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_media_alt_from_filename','label'=>'Auto Alt from File','name'=>'theme_media_alt_from_filename','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_media_add_dimensions','label'=>'Image Dimensions','name'=>'theme_media_add_dimensions','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_enable_frontend_cache_headers','label'=>'Cache Headers','name'=>'theme_enable_frontend_cache_headers','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'14','class'=>'wp-theme-toggle-card wp-theme-toggle-compact']];
+        $fields[] = ['key'=>'field_theme_header_menu_mode','label'=>'Desktop Header Menu','name'=>'theme_header_menu_mode','type'=>'select','choices'=>['dropdown'=>'Dropdown','megamenu'=>'Megamenu'],'default_value'=>'dropdown','ui'=>1,'return_format'=>'value','wrapper'=>['width'=>'25','class'=>'wp-theme-settings-card']];
 
-        
         $fields[] = ['key'=>'tab_theme_acf_hero','label'=>'Custom Heros','type'=>'tab'];
 $fields[] = ['key' => 'msg_theme_hero_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Custom Heros ( Archive &amp; uneditable pages )</strong><br><span>ID shortcode: [custom_hero_shop] = shop</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
 $fields[] = [
@@ -590,11 +673,21 @@ $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
             ['key'=>'field_theme_anim_disable_mobile','label'=>'Disable on Mobile','name'=>'theme_anim_disable_mobile','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
             ['key'=>'field_theme_anim_reduce_motion','label'=>'Respect Reduced Motion','name'=>'theme_anim_reduce_motion','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'25']],
             ['key'=>'field_theme_anim_repeat','label'=>'Repeat Count','name'=>'theme_anim_repeat','type'=>'select','choices'=>['1'=>'1','2'=>'2','3'=>'3','infinite'=>'infinite'],'default_value'=>'1','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_anim_default_class','label'=>'Default Animation','name'=>'theme_anim_default_class','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'animate__fadeInUp','wrapper'=>['width'=>'50']],
+            ['key'=>'field_theme_anim_library','label'=>'CSS Animation Library','name'=>'theme_anim_library','type'=>'select','choices'=>['bbtheme-core'=>'BBTheme Core (optimized)','animate'=>'Animate.css (full library)','magic'=>'Magic Animations','hover'=>'Hover.css','custom'=>'Custom CSS URL'],'default_value'=>'bbtheme-core','ui'=>1,'wrapper'=>['width'=>'50']],
+            ['key'=>'field_theme_anim_custom_library_url','label'=>'Custom Library URL','name'=>'theme_anim_custom_library_url','type'=>'url','placeholder'=>'https://example.com/animations.css','wrapper'=>['width'=>'50'],'conditional_logic'=>[[['field'=>'field_theme_anim_library','operator'=>'==','value'=>'custom']]]],
+            ['key'=>'field_theme_anim_enabled_classes','label'=>'Built-in animation classes','name'=>'theme_anim_enabled_classes','type'=>'checkbox','choices'=>function_exists('bbtheme_get_core_animation_checkbox_choices') ? bbtheme_get_core_animation_checkbox_choices() : ['fade-in'=>'Fade In','fade-in-up'=>'Fade In Up','fade-in-down'=>'Fade In Down','fade-in-left'=>'Fade In Left','fade-in-right'=>'Fade In Right'],'default_value'=>['fade-in','fade-in-up','fade-in-down','fade-in-left','fade-in-right'],'layout'=>'horizontal','toggle'=>1,'wrapper'=>['width'=>'100']],
+            ['key'=>'field_theme_anim_default_class','label'=>'Default Animation Class','name'=>'theme_anim_default_class','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in-up','wrapper'=>['width'=>'50']],
             ['key'=>'field_theme_anim_custom_class','label'=>'Extra Class','name'=>'theme_anim_custom_class','type'=>'text','default_value'=>'','wrapper'=>['width'=>'50']],
             ['key'=>'field_theme_anim_duration','label'=>'Duration','name'=>'theme_anim_duration','type'=>'text','default_value'=>'1s','placeholder'=>'1s or 800ms','wrapper'=>['width'=>'33']],
             ['key'=>'field_theme_anim_delay','label'=>'Delay','name'=>'theme_anim_delay','type'=>'text','default_value'=>'0s','placeholder'=>'0s or 150ms','wrapper'=>['width'=>'33']],
             ['key'=>'field_theme_anim_preview_text','label'=>'Preview Text','name'=>'theme_anim_preview_text','type'=>'text','default_value'=>'Animation preview','wrapper'=>['width'=>'34']],
+            ['key' => 'msg_theme_animation_demo_slots', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Ready theme animations</strong><br><span>Choose prepared animation classes for common theme parts. Use these in templates with bbtheme_get_theme_animation_attributes_by_slot(). You can also add classes like <code>fade-in-up</code> directly to any element.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']],
+            ['key'=>'field_theme_anim_preset_hero','label'=>'Hero','name'=>'theme_anim_preset_hero','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in-up','wrapper'=>['width'=>'16']],
+            ['key'=>'field_theme_anim_preset_heading','label'=>'Heading','name'=>'theme_anim_preset_heading','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in-up','wrapper'=>['width'=>'17']],
+            ['key'=>'field_theme_anim_preset_text','label'=>'Text','name'=>'theme_anim_preset_text','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in','wrapper'=>['width'=>'17']],
+            ['key'=>'field_theme_anim_preset_media','label'=>'Media','name'=>'theme_anim_preset_media','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in-right','wrapper'=>['width'=>'17']],
+            ['key'=>'field_theme_anim_preset_card','label'=>'Card','name'=>'theme_anim_preset_card','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in-up','wrapper'=>['width'=>'16']],
+            ['key'=>'field_theme_anim_preset_button','label'=>'Button','name'=>'theme_anim_preset_button','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'fade-in','wrapper'=>['width'=>'17']],
             ['key'=>'field_theme_motion_enable_lottie','label'=>'Enable Lottie Support','name'=>'theme_motion_enable_lottie','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'20']],
             ['key'=>'field_theme_motion_lottie_url','label'=>'Default Lottie URL','name'=>'theme_motion_lottie_url','type'=>'url','wrapper'=>['width'=>'40']],
             ['key'=>'field_theme_motion_lottie_speed','label'=>'Lottie Speed','name'=>'theme_motion_lottie_speed','type'=>'text','default_value'=>'1','wrapper'=>['width'=>'10']],
@@ -872,6 +965,9 @@ if (!function_exists('wp_theme_sync_animation_settings_from_acf')) {
 
         update_option('bbtheme_animation_settings', [
             'enabled' => get_field('theme_anim_enabled', 'option') ? '1' : '',
+            'library' => (string) get_field('theme_anim_library', 'option'),
+            'custom_library_url' => (string) get_field('theme_anim_custom_library_url', 'option'),
+            'enabled_classes' => array_values(array_filter((array) get_field('theme_anim_enabled_classes', 'option'))),
             'default_class' => $default_class,
             'default_duration' => (string) get_field('theme_anim_duration', 'option'),
             'default_delay' => (string) get_field('theme_anim_delay', 'option'),
@@ -1300,56 +1396,67 @@ if (!function_exists('wp_theme_demo_import_markup')) {
 
 if (!function_exists('wp_theme_demo_homepage_content')) {
     function wp_theme_demo_homepage_content() {
-        return <<<'HTML'
-<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-center wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12,"md":7} -->
-<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Standard Business / SaaS</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Build a cleaner SaaS website with WP BBuilder-powered sections.</h1><!-- /wp:heading -->
-<!-- wp:paragraph {"className":"wp-theme-demo-copy"} --><p class="wp-theme-demo-copy">A polished starter demo with hero, trust logos, features, pricing, FAQ, blog, and CTA — ready to customize with Bootstrap-friendly blocks.</p><!-- /wp:paragraph -->
-<!-- wp:wpbb/button {"text":"Start Free Trial","url":"#pricing","btnClass":"btn btn-primary px-4 py-2 me-2"} /-->
-<!-- wp:wpbb/button {"text":"See Pricing","url":"#pricing","btnClass":"btn btn-outline-dark px-4 py-2"} /-->
-<!-- wp:html --><div class="row g-3 mt-4"><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>12k+</strong><br/>active users</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>42%</strong><br/>faster onboarding</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>99.9%</strong><br/>uptime target</div></div></div><!-- /wp:html -->
+        $logo = esc_url(get_template_directory_uri() . '/assets/img/logo-placeholder-gray.svg');
+        return <<<HTML
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 py-xl-6 align-items-center wp-theme-demo-homepage wp-theme-demo-homepage--hero fade-in-up"} -->
+<!-- wp:wpbb/column {"xs":12,"lg":7} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Business starter demo</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Launch a clean, classic site with flexible WP BBuilder sections.</h1><!-- /wp:heading -->
+<!-- wp:paragraph {"className":"wp-theme-demo-copy"} --><p class="wp-theme-demo-copy">A polished homepage demo with a structured hero, trusted logos, feature cards, testimonials, pricing, FAQ, blog, and a clean CTA — ready for real client work.</p><!-- /wp:paragraph -->
+<!-- wp:wpbb/button {"text":"Explore services","url":"/services/","btnClass":"btn btn-primary px-4 py-2 me-2"} /-->
+<!-- wp:wpbb/button {"text":"Contact us","url":"/contact/","btnClass":"btn btn-outline-dark px-4 py-2"} /-->
+<!-- wp:html --><div class="row g-3 mt-4"><div class="col-12 col-md-4"><div class="wp-theme-demo-stat"><strong>12k+</strong><br/>active users</div></div><div class="col-12 col-md-4"><div class="wp-theme-demo-stat"><strong>42%</strong><br/>faster onboarding</div></div><div class="col-12 col-md-4"><div class="wp-theme-demo-stat"><strong>99.9%</strong><br/>uptime target</div></div></div><!-- /wp:html -->
 <!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":5} -->
-<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/960x680/e2e8f0/0f172a?text=SaaS+Dashboard" alt="Dashboard preview"/></figure><!-- /wp:image -->
+<!-- wp:wpbb/column {"xs":12,"lg":5} -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/960x680/e2e8f0/0f172a?text=Hero+Preview" alt="Homepage hero preview" loading="lazy" width="960" height="680"/></figure><!-- /wp:image -->
 <!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container pb-5 wp-theme-demo-homepage text-center"} -->
-<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+1" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+2" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+3" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+4" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+5" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+6" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-3","customClasses":"container py-4 py-xl-5 text-center align-items-center wp-theme-demo-homepage wp-theme-demo-homepage--logos fade-in"} -->
+<!-- wp:wpbb/column {"xs":12,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="{$logo}" alt="Partner logo 1" loading="lazy" width="220" height="60"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="{$logo}" alt="Partner logo 2" loading="lazy" width="220" height="60"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="{$logo}" alt="Partner logo 3" loading="lazy" width="220" height="60"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="{$logo}" alt="Partner logo 4" loading="lazy" width="220" height="60"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="{$logo}" alt="Partner logo 5" loading="lazy" width="220" height="60"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="{$logo}" alt="Partner logo 6" loading="lazy" width="220" height="60"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Features</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Everything you need to launch a modern business site.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Reusable blocks</h4><p>Mix Gutenberg content with structured builder blocks for faster editing.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Bootstrap layout</h4><p>Rows, columns, utilities, and spacing stay consistent across the site.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Conversion flow</h4><p>Pricing, FAQ, testimonials, blog, and CTA sections work together.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage wp-theme-demo-homepage--features fade-in-up"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Core sections</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Designed with better spacing, cleaner cards, and reusable sections.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Hero + stats</h4><p>Lead with a strong message, quick proof points, and a clear primary CTA.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Services + content</h4><p>Blend headings, feature cards, timelines, and buttons with a consistent rhythm.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Blog + CTA</h4><p>Keep discovery and conversion flowing directly to your contact page.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">How It Works</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Go from idea to launch in three steps.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":8} --><!-- wp:wpbb/timeline {"title":"Timeline","layout":"vertical","itemsJson":"[{"date":"Step 1","title":"Setup","text":"Install blocks, choose styles, and import the demo."},{"date":"Step 2","title":"Customize","text":"Replace content, logos, pricing, and brand visuals."},{"date":"Step 3","title":"Publish","text":"Set the page live and refine each section over time."}]"} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage align-items-center fade-in-up"} -->
+<!-- wp:wpbb/column {"xs":12,"lg":5} --><!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x680/e2e8f0/0f172a?text=Service+Image" alt="Service showcase image" loading="lazy" width="900" height="680"/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"lg":7} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Services</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Content blocks you can mix across inner pages.</h2><!-- /wp:heading --><!-- wp:list --><ul><li>Hero sections with image and CTA</li><li>Feature cards and milestone blocks</li><li>Timelines, testimonials, pricing, and blog sections</li></ul><!-- /wp:list --><!-- wp:wpbb/button {"text":"View services page","url":"/services/","btnClass":"btn btn-outline-dark px-4 py-2 mt-2"} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"pricing"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/pricecards {"title":"Pricing","currency":"£","styleVariant":"default","cardsJson":"[{"title":"Starter","price":"29","period":"/mo","text":"Core pages, forms, and analytics.","button":"Choose plan","featured":false},{"title":"Growth","price":"99","period":"/mo","text":"Automation, CRM, and advanced reporting.","button":"Choose plan","featured":true},{"title":"Scale","price":"Custom","period":"","text":"Bespoke onboarding, support, and optimization.","button":"Contact sales","featured":false}]","showFeatured":true} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage fade-in-up"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Testimonials</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Trusted by teams who need fast, structured updates.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><p>“We went from a messy draft to a polished launch page much faster.”</p><strong>Product Lead</strong></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><p>“The spacing and structure finally felt consistent across every section.”</p><strong>Marketing Manager</strong></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><p>“A strong starter that we could extend into inner pages without rebuilding.”</p><strong>Agency Founder</strong></div><!-- /wp:html --><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">FAQ</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Frequently asked questions</h2><!-- /wp:heading --><!-- wp:wpbb/accordion {"flush":false} --><!-- wp:wpbb/accordion-item {"title":"Can I use this as my first live homepage?"} --><p>Yes. Import it, replace the placeholder copy, and set the page as your front page.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Does this use WP BBuilder blocks?"} --><p>Yes. The demo uses WP BBuilder rows, columns, buttons, accordion, CTA section, blog filter, and dynamic form blocks where available.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Can I swap sections out later?"} --><p>Absolutely. Each section is modular and can be edited or replaced independently.</p><!-- /wp:wpbb/accordion-item --><!-- /wp:wpbb/accordion --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage fade-in-up","anchor":"pricing"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/pricecards {"title":"Pricing","currency":"£","styleVariant":"default","cardsJson":"[{\"title\":\"Starter\",\"price\":\"29\",\"period\":\"/mo\",\"text\":\"Core pages, forms, and analytics.\",\"button\":\"Choose plan\",\"featured\":false},{\"title\":\"Growth\",\"price\":\"99\",\"period\":\"/mo\",\"text\":\"Automation, CRM, and advanced reporting.\",\"button\":\"Choose plan\",\"featured\":true},{\"title\":\"Scale\",\"price\":\"Custom\",\"period\":\"\",\"text\":\"Bespoke onboarding, support, and optimization.\",\"button\":\"Contact sales\",\"featured\":false}]"} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage fade-in-up"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">FAQ</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Frequently asked questions</h2><!-- /wp:heading --><!-- wp:wpbb/accordion {"flush":false} --><!-- wp:wpbb/accordion-item {"title":"Can I use this as my first live homepage?"} --><p>Yes. Import it, replace the placeholder copy, and set the page as your front page.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Does this use WP BBuilder blocks?"} --><p>Yes. The demo uses WP BBuilder rows, columns, buttons, accordion, CTA section, and dynamic content blocks where available.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Can I swap sections later?"} --><p>Absolutely. Each section is modular and can be edited or replaced independently.</p><!-- /wp:wpbb/accordion-item --><!-- /wp:wpbb/accordion --><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage fade-in-up"} -->
 <!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/blog-filter {"title":"Latest Posts","postsToShow":3,"buttonText":"Filter"} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"cta"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/cta-section {"title":"Ready to launch your new homepage?","text":"Import the layout, replace the content, and start publishing with a cleaner workflow.","buttonText":"Request Demo","buttonUrl":"#"} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","backgroundImageUrl":"https://placehold.co/1600x900/dbeafe/1e3a8a?text=CTA+Background","backgroundPosition":"center center","backgroundSize":"cover","backgroundAttachment":"fixed","customClasses":"container-fluid py-5 mt-4 wp-theme-demo-cta-row fade-in","anchor":"cta"} -->
+<!-- wp:wpbb/column {"xs":12,"customClasses":"text-center py-5"} -->
+<!-- wp:html --><div class="wp-theme-demo-cta-box"><span class="wp-theme-demo-kicker">Ready to launch</span><h2>Need a page tailored to your business?</h2><p>Use this clean starter demo as the base, then guide visitors directly to your contact page.</p></div><!-- /wp:html -->
+<!-- wp:wpbb/button {"text":"Go to contact page","url":"/contact/","btnClass":"btn btn-primary px-4 py-2 mt-3"} /-->
+<!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 HTML;
     }
@@ -1358,7 +1465,7 @@ HTML;
 if (!function_exists('wp_theme_demo_blog_post_content')) {
     function wp_theme_demo_blog_post_content($index = 1) {
         return '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus commodo, libero sit amet feugiat posuere, mauris arcu sodales turpis, sed bibendum enim nisl vel justo.</p><!-- /wp:paragraph -->'
-            . '<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1200x700/e2e8f0/0f172a?text=Demo+Post+' . intval($index) . '" alt="Demo post"/></figure><!-- /wp:image -->'
+            . '<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1200x700/e2e8f0/0f172a?text=Demo+Post+' . intval($index) . '" alt="Demo post" loading="lazy" width="1200" height="700"/></figure><!-- /wp:image -->'
             . '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Section heading</h3><!-- /wp:heading -->'
             . '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec at arcu non risus laoreet iaculis. Integer ut augue nisl. Integer interdum sem quis arcu porta, et feugiat dui finibus.</p><!-- /wp:paragraph -->'
             . '<!-- wp:list --><ul><li>First benefit point</li><li>Second benefit point</li><li>Third benefit point</li></ul><!-- /wp:list -->';
@@ -1368,11 +1475,11 @@ if (!function_exists('wp_theme_demo_blog_post_content')) {
 if (!function_exists('wp_theme_demo_about_page_content')) {
     function wp_theme_demo_about_page_content() {
         return <<<'HTML'
-<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5"} -->
-<!-- wp:wpbb/column {"xs":12,"md":6} -->
-<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x700/e2e8f0/0f172a?text=About+Us" alt="About us"/></figure><!-- /wp:image -->
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-center"} -->
+<!-- wp:wpbb/column {"xs":12,"lg":5} -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x700/e2e8f0/0f172a?text=About+Us" alt="About us" loading="lazy" width="900" height="700"/></figure><!-- /wp:image -->
 <!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":6} -->
+<!-- wp:wpbb/column {"xs":12,"lg":7} -->
 <!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">About</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">A simple story, told with clean blocks.</h1><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec magna justo. Sed posuere sem vel leo feugiat, ac mattis nunc maximus.</p><!-- /wp:paragraph -->
@@ -1384,7 +1491,46 @@ if (!function_exists('wp_theme_demo_about_page_content')) {
 <!-- wp:wpbb/column {"xs":12} -->
 <!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Timeline</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Milestones</h2><!-- /wp:heading -->
-<!-- wp:html --><div class="row g-4"><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2019</strong><p>Company founded and first service offer launched.</p></div></div><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2022</strong><p>Expanded into productized services and platform workflows.</p></div></div><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2026</strong><p>New modern marketing site and reusable content system released.</p></div></div></div><!-- /wp:html -->
+<!-- wp:wpbb/timeline {"title":"Milestones","layout":"vertical","itemsJson":"[{\"date\":\"2019\",\"title\":\"Company founded\",\"text\":\"Company founded and first service offer launched.\"},{\"date\":\"2022\",\"title\":\"Services expanded\",\"text\":\"Expanded into productized services and platform workflows.\"},{\"date\":\"2026\",\"title\":\"Modern relaunch\",\"text\":\"New modern marketing site and reusable content system released.\"}]"} /-->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","backgroundImageUrl":"https://placehold.co/1600x900/dbeafe/1e3a8a?text=About+CTA","backgroundPosition":"center center","backgroundSize":"cover","backgroundAttachment":"fixed","customClasses":"container-fluid py-5 mt-4 wp-theme-demo-cta-row fade-in"} -->
+<!-- wp:wpbb/column {"xs":12,"customClasses":"text-center py-5"} -->
+<!-- wp:html --><div class="wp-theme-demo-cta-box"><span class="wp-theme-demo-kicker">Build with confidence</span><h2>Ready to build the next page in the flow?</h2><p>Use the same modular blocks across About, Services, landing pages, and campaign content.</p></div><!-- /wp:html -->
+<!-- wp:wpbb/button {"text":"Contact us","url":"/contact/","btnClass":"btn btn-primary px-4 py-2 mt-3"} /-->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+HTML;
+    }
+}
+
+
+if (!function_exists('wp_theme_demo_services_page_content')) {
+    function wp_theme_demo_services_page_content() {
+        return <<<'HTML'
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-center"} -->
+<!-- wp:wpbb/column {"xs":12,"lg":6} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Services</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Service packages designed to launch and grow your site.</h1><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Choose a clean starting point, then scale with content, SEO, and conversion updates using the same block system.</p><!-- /wp:paragraph -->
+<!-- wp:wpbb/button {"text":"Contact us","url":"/contact/","btnClass":"btn btn-primary px-4 py-2"} /-->
+<!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"lg":6} -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/960x720/e2e8f0/0f172a?text=Services+Overview" alt="Services overview" loading="lazy" width="960" height="720"/></figure><!-- /wp:image -->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5"} -->
+<!-- wp:wpbb/column {"xs":12,"md":4,"customClasses":"h-100"} --><!-- wp:html --><div id="web-design" class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Web Design</h4><p>Structure, page layouts, and polished sections for a better first impression.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4,"customClasses":"h-100"} --><!-- wp:html --><div id="growth-seo" class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Growth SEO</h4><p>Content planning, technical cleanup, and conversion-focused landing pages.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4,"customClasses":"h-100"} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Ongoing support</h4><p>Iterate on sections, add campaigns, and improve the site over time.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","backgroundImageUrl":"https://placehold.co/1600x900/dbeafe/1e3a8a?text=Parallax+CTA","backgroundPosition":"center center","backgroundSize":"cover","backgroundAttachment":"fixed","customClasses":"container-fluid py-5 mt-4 wp-theme-demo-cta-row fade-in"} -->
+<!-- wp:wpbb/column {"xs":12,"customClasses":"text-center py-5"} -->
+<!-- wp:html --><div class="wp-theme-demo-cta-box"><span class="wp-theme-demo-kicker">Tailored package</span><h2>Need a package shaped for your launch?</h2><p>Tell us what you need and we will shape the right mix of design, content, and support.</p></div><!-- /wp:html -->
+<!-- wp:wpbb/button {"text":"Go to contact page","url":"/contact/","btnClass":"btn btn-primary px-4 py-2 mt-3"} /-->
 <!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 HTML;
@@ -1395,16 +1541,19 @@ if (!function_exists('wp_theme_demo_contact_page_content')) {
     function wp_theme_demo_contact_page_content() {
         return <<<'HTML'
 <!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-start"} -->
-<!-- wp:wpbb/column {"xs":12,"md":5} -->
+<!-- wp:wpbb/column {"xs":12,"lg":4} -->
 <!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Contact</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Let’s talk about your project.</h1><!-- /wp:heading -->
-<!-- wp:html --><div class="wp-theme-demo-card"><p><strong>Email</strong><br/>hello@example.com</p><p><strong>Phone</strong><br/>+44 0000 000000</p><p><strong>Address</strong><br/>123 Business Street, London</p></div><!-- /wp:html -->
-<!-- wp:wpbb/dynamic-form {"showTitle":true,"formTitle":"Send us a message"} /-->
+<!-- wp:html --><div class="wp-theme-demo-card wp-theme-demo-contact-card"><p><strong>Email</strong><br/>hello@example.com</p><p><strong>Phone</strong><br/>+44 0000 000000</p><p><strong>Address</strong><br/>123 Business Street, London</p><p><strong>Hours</strong><br/>Mon–Fri / 9:00–17:00</p></div><!-- /wp:html -->
 <!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":7} -->
-<!-- wp:embed {"url":"https://www.google.com/maps?q=London&output=embed","type":"rich","providerNameSlug":"google"} -->
-<figure class="wp-block-embed is-type-rich is-provider-google wp-block-embed-google"><div class="wp-block-embed__wrapper">https://www.google.com/maps?q=London&output=embed</div></figure>
-<!-- /wp:embed -->
+<!-- wp:wpbb/column {"xs":12,"lg":8} -->
+<!-- wp:wpbb/dynamic-form {"showTitle":true,"formTitle":"Send us a message","styleVariant":"soft"} /-->
+<!-- /wp:wpbb/column -->
+<!-- /wp:wpbb/row -->
+
+<!-- wp:wpbb/row {"containerClass":"container-fluid","gutterX":"gx-0","gutterY":"gy-0","customClasses":"pt-0 pb-5 mt-2 wp-theme-demo-contact-map-row"} -->
+<!-- wp:wpbb/column {"xs":12} -->
+<!-- wp:wpbb/google-map {"address":"London","height":"460px","zoom":12} /-->
 <!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 HTML;
@@ -1433,10 +1582,38 @@ if (!function_exists('wp_theme_seed_demo_blog_posts')) {
     }
 }
 
+if (!function_exists('wp_theme_seed_demo_megamenu')) {
+    function wp_theme_seed_demo_megamenu() {
+        if (!wp_theme_option_enabled('theme_enable_cpt_megamenu', 'option', false) || !post_type_exists('megamenu')) {
+            return;
+        }
+
+        $content = <<<HTML
+<!-- wp:html --><div class="container-fluid"><div class="row g-4 align-items-start"><div class="col-12 col-xl-4"><p class="wp-theme-demo-kicker">Featured services</p><h3 class="wp-block-heading">Launch with a classic blue and grey system.</h3><p>Use the mega panel for quick links, service summaries, featured posts, and action buttons.</p><div class="d-flex flex-wrap gap-2 mt-3"><a class="btn btn-primary" href="/services/">Explore services</a><a class="btn btn-outline-dark" href="/contact/">Talk with us</a></div></div><div class="col-12 col-xl-5"><div class="row g-3"><div class="col-md-6"><div class="wp-theme-demo-card h-100"><div class="wp-theme-demo-icon">01</div><h4>Web Design</h4><p>Layouts, components, and polished landing sections.</p></div></div><div class="col-md-6"><div class="wp-theme-demo-card h-100"><div class="wp-theme-demo-icon">02</div><h4>Growth SEO</h4><p>Content structure, metadata, and fast-loading pages.</p></div></div><div class="col-md-6"><div class="wp-theme-demo-card h-100"><div class="wp-theme-demo-icon">03</div><h4>Campaign Pages</h4><p>Reusable CTA sections and contact-focused flows.</p></div></div><div class="col-md-6"><div class="wp-theme-demo-card h-100"><div class="wp-theme-demo-icon">04</div><h4>Ongoing Support</h4><p>Keep shipping updates without rebuilding the site.</p></div></div></div></div><div class="col-12 col-xl-3"><figure class="wp-block-image size-large mb-0"><img src="https://placehold.co/900x780/e2e8f0/0f172a?text=Mega+Menu" alt="Megamenu preview" loading="lazy" width="900" height="780"/></figure></div></div></div><!-- /wp:html -->
+HTML;
+
+        $existing = get_page_by_path('services-mega-menu', OBJECT, 'megamenu');
+        $args = [
+            'post_title' => 'Services Mega Menu',
+            'post_name' => 'services-mega-menu',
+            'post_type' => 'megamenu',
+            'post_status' => 'publish',
+            'post_content' => $content,
+        ];
+        if ($existing instanceof WP_Post) {
+            $args['ID'] = $existing->ID;
+            wp_update_post($args);
+        } else {
+            wp_insert_post($args);
+        }
+    }
+}
+
 if (!function_exists('wp_theme_seed_demo_pages')) {
     function wp_theme_seed_demo_pages() {
         $pages = [
             'about' => ['title' => 'About', 'content' => wp_theme_demo_about_page_content()],
+            'services' => ['title' => 'Services', 'content' => wp_theme_demo_services_page_content()],
             'contact' => ['title' => 'Contact', 'content' => wp_theme_demo_contact_page_content()],
         ];
 
@@ -1483,6 +1660,10 @@ if (!function_exists('wp_theme_import_demo_homepage')) {
 
         wp_theme_seed_demo_blog_posts();
         wp_theme_seed_demo_pages();
+        wp_theme_seed_demo_megamenu();
+        if (function_exists('wp_theme_ensure_demo_menus')) {
+            wp_theme_ensure_demo_menus();
+        }
 
         update_post_meta($page_id, '_wp_theme_demo_homepage', 1);
         update_option('show_on_front', 'page');
@@ -1509,7 +1690,7 @@ if (!function_exists('wp_theme_ajax_import_demo_homepage')) {
             'pageId' => $page_id,
             'editUrl' => get_edit_post_link($page_id, 'raw'),
             'viewUrl' => get_permalink($page_id),
-            'message' => __('Demo homepage, 5 demo blog posts, About page, and Contact page imported.', 'wp-theme'),
+            'message' => __('Demo homepage, 5 demo blog posts, About, Services, and Contact pages imported.', 'wp-theme'),
         ]);
     }
 }

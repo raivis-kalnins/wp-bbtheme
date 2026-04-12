@@ -1,5 +1,39 @@
+@use "sass:color";
 @import url('//fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'acf-variables.generated';
+
+// Safe fallbacks when the generated ACF Sass file only contains a partial set of variables.
+$acf-gutter-width: 30px !default;
+$acf-container-width: 1320px !default;
+$acf-content-width: 840px !default;
+$acf-wide-width: 1440px !default;
+$acf-brandcolor: #0d6efd !default;
+$acf-accent-color: #6c757d !default;
+$acf-grey-light: #f5f5f5 !default;
+$acf-grey-dark: #343a40 !default;
+$acf-grey-txt: #5f6368 !default;
+$acf-light-bg: #ffffff !default;
+$acf-heading-color: #111111 !default;
+$acf-green: #198754 !default;
+$acf-red: #dc3545 !default;
+$acf-background-color: #ffffff !default;
+$acf-surface-alt: #f8f9fa !default;
+$acf-border-color: #dee2e6 !default;
+$acf-warning: #ffc107 !default;
+$acf-info: #0dcaf0 !default;
+$acf-link-color: $acf-brandcolor !default;
+$acf-link-hover-color: color.adjust($acf-brandcolor, $lightness: -10%) !default;
+$acf-body-size: 16px !default;
+$acf-small-size: 14px !default;
+$acf-large-size: 20px !default;
+$acf-h1-font-size: 56px !default;
+$acf-h2-font-size: 42px !default;
+$acf-h3-font-size: 32px !default;
+$acf-h4-font-size: 24px !default;
+$acf-h5-font-size: 20px !default;
+$acf-h6-font-size: 16px !default;
+$acf-section-spacing: 80px !default;
+$acf-radius: 8px !default;
 
 $headings-font: $acf-headings-font !default;
 $body-font: $acf-body-font !default;

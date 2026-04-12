@@ -16,11 +16,40 @@ if (!function_exists('bbtheme_get_animation_registry')) {
     }
 }
 
+
+if (!function_exists('bbtheme_get_core_animation_aliases')) {
+    function bbtheme_get_core_animation_aliases() {
+        return [
+            ['group' => 'BBTheme Core', 'class' => 'fade-in', 'label' => 'Fade In', 'description' => 'Built-in lightweight fade in.', 'core' => true],
+            ['group' => 'BBTheme Core', 'class' => 'fade-in-up', 'label' => 'Fade In Up', 'description' => 'Built-in lightweight fade in up.', 'core' => true],
+            ['group' => 'BBTheme Core', 'class' => 'fade-in-down', 'label' => 'Fade In Down', 'description' => 'Built-in lightweight fade in down.', 'core' => true],
+            ['group' => 'BBTheme Core', 'class' => 'fade-in-left', 'label' => 'Fade In Left', 'description' => 'Built-in lightweight fade in from left.', 'core' => true],
+            ['group' => 'BBTheme Core', 'class' => 'fade-in-right', 'label' => 'Fade In Right', 'description' => 'Built-in lightweight fade in from right.', 'core' => true],
+            ['group' => 'BBTheme Core', 'class' => 'zoom-in', 'label' => 'Zoom In', 'description' => 'Built-in lightweight zoom in.', 'core' => true],
+        ];
+    }
+}
+
+if (!function_exists('bbtheme_get_core_animation_checkbox_choices')) {
+    function bbtheme_get_core_animation_checkbox_choices() {
+        $choices = [];
+        foreach (bbtheme_get_core_animation_aliases() as $item) {
+            $choices[$item['class']] = $item['label'];
+        }
+        return $choices;
+    }
+}
+
+
 if (!function_exists('bbtheme_get_animation_choices')) {
     function bbtheme_get_animation_choices($include_empty = false) {
         $choices = [];
         if ($include_empty) {
             $choices[''] = __('None', 'wp-theme');
+        }
+
+        foreach (bbtheme_get_core_animation_aliases() as $item) {
+            $choices[$item['class']] = sprintf('%s — %s', $item['group'], $item['label']);
         }
 
         foreach (bbtheme_get_animation_registry() as $item) {
@@ -34,7 +63,7 @@ if (!function_exists('bbtheme_get_animation_choices')) {
 if (!function_exists('bbtheme_get_grouped_animation_registry')) {
     function bbtheme_get_grouped_animation_registry() {
         $grouped = [];
-        foreach (bbtheme_get_animation_registry() as $item) {
+        foreach (array_merge(bbtheme_get_core_animation_aliases(), bbtheme_get_animation_registry()) as $item) {
             $group = $item['group'] ?? __('Other', 'wp-theme');
             if (!isset($grouped[$group])) {
                 $grouped[$group] = [];
@@ -47,7 +76,7 @@ if (!function_exists('bbtheme_get_grouped_animation_registry')) {
 
 if (!function_exists('bbtheme_get_animation_meta')) {
     function bbtheme_get_animation_meta($class_name) {
-        foreach (bbtheme_get_animation_registry() as $item) {
+        foreach (array_merge(bbtheme_get_core_animation_aliases(), bbtheme_get_animation_registry()) as $item) {
             if (($item['class'] ?? '') === $class_name) {
                 return $item;
             }
@@ -56,11 +85,108 @@ if (!function_exists('bbtheme_get_animation_meta')) {
     }
 }
 
+
+if (!function_exists('bbtheme_get_theme_animation_slot_defaults')) {
+    function bbtheme_get_theme_animation_slot_defaults() {
+        return [
+            'hero' => 'fade-in-up',
+            'heading' => 'fade-in-up',
+            'text' => 'fade-in',
+            'media' => 'fade-in-right',
+            'card' => 'fade-in-up',
+            'button' => 'fade-in',
+        ];
+    }
+}
+
+if (!function_exists('bbtheme_get_theme_animation_slots')) {
+    function bbtheme_get_theme_animation_slots() {
+        $defaults = bbtheme_get_theme_animation_slot_defaults();
+        $tokens = function_exists('wp_theme_style_tokens') ? wp_theme_style_tokens() : [];
+
+        return [
+            'hero' => $tokens['theme_anim_preset_hero'] ?? $defaults['hero'],
+            'heading' => $tokens['theme_anim_preset_heading'] ?? $defaults['heading'],
+            'text' => $tokens['theme_anim_preset_text'] ?? $defaults['text'],
+            'media' => $tokens['theme_anim_preset_media'] ?? $defaults['media'],
+            'card' => $tokens['theme_anim_preset_card'] ?? $defaults['card'],
+            'button' => $tokens['theme_anim_preset_button'] ?? $defaults['button'],
+        ];
+    }
+}
+
+if (!function_exists('bbtheme_get_theme_animation_slot')) {
+    function bbtheme_get_theme_animation_slot($slot, $fallback = '') {
+        $slot = sanitize_key((string) $slot);
+        $slots = bbtheme_get_theme_animation_slots();
+        return $slots[$slot] ?? $fallback;
+    }
+}
+
+if (!function_exists('bbtheme_get_theme_animation_attributes_by_slot')) {
+    function bbtheme_get_theme_animation_attributes_by_slot($slot, $args = []) {
+        if (empty($args['animation'])) {
+            $args['animation'] = bbtheme_get_theme_animation_slot($slot, '');
+        }
+        return bbtheme_get_animation_attributes($args);
+    }
+}
+
+if (!function_exists('bbtheme_get_ready_animation_demo_sets')) {
+    function bbtheme_get_ready_animation_demo_sets() {
+        return [
+            'clean-fade' => [
+                'label' => __('Clean Fade', 'wp-theme'),
+                'description' => __('Safe business preset with soft fades and gentle movement.', 'wp-theme'),
+                'hero' => 'animate__fadeInUp',
+                'heading' => 'animate__fadeInUp',
+                'text' => 'animate__fadeIn',
+                'media' => 'animate__zoomIn',
+                'card' => 'animate__fadeInUp',
+                'button' => 'animate__pulse',
+            ],
+            'directional-rise' => [
+                'label' => __('Directional Rise', 'wp-theme'),
+                'description' => __('Content rises in while visuals arrive with stronger directional motion.', 'wp-theme'),
+                'hero' => 'animate__fadeInUp',
+                'heading' => 'animate__fadeInLeft',
+                'text' => 'animate__fadeInUp',
+                'media' => 'animate__fadeInRight',
+                'card' => 'animate__fadeInUp',
+                'button' => 'animate__headShake',
+            ],
+            'bold-promo' => [
+                'label' => __('Bold Promo', 'wp-theme'),
+                'description' => __('Higher-energy landing page preset for campaigns and product promos.', 'wp-theme'),
+                'hero' => 'animate__backInUp',
+                'heading' => 'animate__backInLeft',
+                'text' => 'animate__fadeInUp',
+                'media' => 'animate__zoomIn',
+                'card' => 'animate__flipInX',
+                'button' => 'animate__tada',
+            ],
+            'story-gallery' => [
+                'label' => __('Story Gallery', 'wp-theme'),
+                'description' => __('Balanced preset for portfolio, testimonial, and image-heavy sections.', 'wp-theme'),
+                'hero' => 'animate__fadeIn',
+                'heading' => 'animate__fadeInUp',
+                'text' => 'animate__fadeIn',
+                'media' => 'animate__fadeInRightBig',
+                'card' => 'animate__zoomInUp',
+                'button' => 'animate__heartBeat',
+            ],
+        ];
+    }
+}
+
 if (!function_exists('bbtheme_get_animation_settings_defaults')) {
     function bbtheme_get_animation_settings_defaults() {
         return [
             'enabled' => '1',
-            'default_class' => 'animate__fadeInUp',
+            'library' => 'bbtheme-core',
+            'custom_library_url' => '',
+            'enabled_classes' => ['fade-in', 'fade-in-up', 'fade-in-down', 'fade-in-left', 'fade-in-right'],
+            'default_class' => 'fade-in-up',
             'default_duration' => '1s',
             'default_delay' => '0s',
             'default_repeat' => '1',
@@ -133,8 +259,20 @@ if (!function_exists('bbtheme_sanitize_animation_settings')) {
             $default_class = $defaults['default_class'];
         }
 
+        $enabled_classes = $input['enabled_classes'] ?? $defaults['enabled_classes'];
+        if (!is_array($enabled_classes)) {
+            $enabled_classes = [$enabled_classes];
+        }
+        $enabled_classes = array_values(array_intersect(array_map('sanitize_text_field', $enabled_classes), array_keys(bbtheme_get_core_animation_checkbox_choices())));
+        if (!$enabled_classes) {
+            $enabled_classes = $defaults['enabled_classes'];
+        }
+
         return [
             'enabled' => empty($input['enabled']) ? '' : '1',
+            'library' => sanitize_key((string) ($input['library'] ?? $defaults['library'])),
+            'custom_library_url' => esc_url_raw((string) ($input['custom_library_url'] ?? $defaults['custom_library_url'])),
+            'enabled_classes' => $enabled_classes,
             'default_class' => $default_class,
             'default_duration' => bbtheme_sanitize_css_time($input['default_duration'] ?? $defaults['default_duration'], $defaults['default_duration']),
             'default_delay' => bbtheme_sanitize_css_time($input['default_delay'] ?? $defaults['default_delay'], $defaults['default_delay']),
@@ -156,9 +294,12 @@ if (!function_exists('bbtheme_animation_class')) {
         }
 
         $animation = $animation ?: ($settings['default_class'] ?? '');
-        $classes = ['animate__animated'];
+        $classes = [];
 
         if (!empty($animation)) {
+            if (str_starts_with((string) $animation, 'animate__')) {
+                $classes[] = 'animate__animated';
+            }
             $classes[] = sanitize_html_class($animation);
         }
 

@@ -1,47 +1,381 @@
-.wp-theme-demo-homepage{background:#f8fafc;color:#0f172a}
-.wp-theme-demo-homepage .wp-theme-demo-section{padding:clamp(3rem,6vw,6rem) 0}
-.wp-theme-demo-homepage .wp-theme-demo-kicker{display:inline-block;padding:.45rem .8rem;border:1px solid #dbe4f0;border-radius:999px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#475569;background:#fff}
-.wp-theme-demo-homepage .wp-theme-demo-heading{letter-spacing:-.03em;line-height:1.04}
-.wp-theme-demo-homepage .wp-theme-demo-copy{color:#475569}
-.wp-theme-demo-homepage .wp-theme-demo-stat{padding:1rem 1.25rem;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
-.wp-theme-demo-homepage .wp-theme-demo-card{padding:1.5rem;border:1px solid #e2e8f0;border-radius:20px;background:#fff;height:100%;box-shadow:0 10px 25px rgba(15,23,42,.04)}
-.wp-theme-demo-homepage .wp-theme-demo-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;font-weight:700;font-size:1.05rem;margin-bottom:1rem}
-.wp-theme-demo-homepage .wp-theme-demo-dark{background:#0f172a;color:#fff}
-.wp-theme-demo-homepage .wp-theme-demo-dark p{color:#cbd5e1}
-.wp-theme-demo-homepage .wp-theme-demo-pricing-popular{position:relative;border-color:#2563eb}
-.wp-theme-demo-homepage .wp-theme-demo-pricing-popular:before{content:"Most Popular";position:absolute;top:-12px;right:18px;background:#2563eb;color:#fff;font-size:.72rem;padding:.35rem .6rem;border-radius:999px}
-.wp-theme-demo-homepage .wp-theme-demo-logo img{opacity:.7;filter:grayscale(1)}
-.wp-theme-demo-homepage .wp-theme-demo-cta{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border-radius:28px;padding:clamp(2rem,4vw,3rem)}
-.wp-theme-demo-homepage .wp-theme-demo-footer{background:#0f172a;color:#cbd5e1}
-.wp-theme-demo-homepage .wp-theme-demo-footer a{color:#fff}
-.wp-theme-demo-homepage .btn{border-radius:999px}
-.wp-theme-demo-homepage .accordion-button:not(.collapsed){background:#eff6ff;color:#0f172a}
+/*
+Theme Name: WordPress Base Theme
+Author: WP
+Author URI: https://digitalpulse.click
+Theme URI: https://digitalpulse.click
+Description: Optimized block theme with ACF Pro and WP BBuilder support.
+Requires at least: 6.6
+Tested up to: 6.8.1
+Requires PHP: 8.0
+Version: 1.3.0
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: wp-bbtheme
+Tags: block-patterns, full-site-editing, custom-colors, custom-logo, custom-menu
+*/
+
+:root {
+  --wp-content-width: 1280px;
+  --wp-container-width: 1400px;
+  --wp-theme-radius: 18px;
+  --wp-theme-radius-sm: 10px;
+  --wp-theme-gap: clamp(1rem, 2vw, 1.5rem);
+  --wp-theme-space: clamp(1.25rem, 3vw, 3rem);
+  --wp-theme-space-lg: clamp(2rem, 6vw, 5rem);
+  --wp-theme-text: #14213d;
+  --wp-theme-muted: #5c677d;
+  --wp-theme-line: rgba(20,33,61,.12);
+  --wp-theme-bg: #ffffff;
+  --wp-theme-surface: #f7f8fb;
+  --wp-theme-primary: var(--wp-brand-color, #d21629);
+  --wp-theme-dark: #111827;
+}
+html { scroll-behavior: smooth; }
+body { color: var(--wp-text-color, var(--wp-theme-text)); background: var(--wp-theme-bg, #ffffff); }
+a { text-underline-offset: .15em; }
+main { min-height: 40vh; }
+img { height: auto; }
+.site-shell, .wp-site-blocks > main, .wp-site-blocks > footer, .wp-site-blocks > header { container-type: inline-size; }
+.wp-site-blocks > * + * { margin-block-start: 0; }
+.wp-block-group.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)),
+.wp-block-post-content.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
+  max-width: var(--wp-content-width);
+}
+.alignwide { max-width: var(--wp-container-width); }
+.wp-block-site-logo img, .custom-logo { max-width: 100%; height: auto; }
+.wp-block-navigation { gap: 1rem; }
+.wp-block-navigation .wp-block-navigation-item__content { font-weight: 600; }
+.wp-block-button__link { border-radius: 999px; padding: .85rem 1.3rem; }
+.wp-block-query-pagination { margin-top: var(--wp-theme-space); }
+.wp-block-search__button { border-radius: 999px; }
+.wp-theme-section { padding-block: var(--wp-theme-space-lg); }
+.wp-theme-surface { background: var(--wp-theme-surface); }
+.wp-theme-card { background: #fff; border: 1px solid var(--wp-theme-line); border-radius: var(--wp-theme-radius); box-shadow: 0 10px 30px rgba(15,23,42,.05); overflow: hidden; }
+.wp-theme-card > * { margin: 0; }
+.wp-theme-card__body { padding: 1.25rem; }
+.wp-theme-grid { display: grid; gap: var(--wp-theme-gap); }
+.wp-theme-grid--3 { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.wp-theme-grid--2 { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.wp-theme-meta { color: var(--wp-theme-muted); font-size: .95rem; }
+.wp-theme-breadcrumbs { font-size: .92rem; color: var(--wp-theme-muted); margin-bottom: 1rem; }
+.wp-theme-breadcrumbs a { color: inherit; text-decoration: none; }
+.wp-theme-site-header { position: sticky; top: 0; z-index: 30; backdrop-filter: saturate(180%) blur(14px); background: rgba(255,255,255,.92); border-bottom: 1px solid var(--wp-theme-line); }
+.admin-bar .wp-theme-site-header { top: 32px; }
+.wp-theme-header-inner, .wp-theme-footer-inner { max-width: var(--wp-container-width); margin-inline: auto; padding-inline: 1rem; }
+.wp-theme-header-top { font-size: .9rem; color: var(--wp-theme-muted); }
+.wp-theme-header-main { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:74px; }
+.wp-theme-header-actions { display:flex; align-items:center; gap:.75rem; }
+.wp-theme-footer { border-top: 1px solid var(--wp-theme-line); background: #fff; }
+.wp-theme-footer .wp-block-navigation { justify-content: flex-start; }
+.skip-link { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+.skip-link:focus { left: 1rem; top: 1rem; width: auto; height: auto; background: #fff; color:#000; padding: .8rem 1rem; z-index: 99999; }
+.wp-theme-share { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+.wp-theme-hero { padding-block: clamp(3rem, 10vw, 8rem); }
+.wp-theme-hero .wp-block-columns { align-items: center; }
+.wp-theme-feature-icon { width: 56px; height:56px; display:inline-grid; place-items:center; border-radius:50%; background: color-mix(in srgb, var(--wp-brand-color, #d21629) 12%, white); color: var(--wp-brand-color, #d21629); margin-bottom:.75rem; }
+.wp-theme-latest-posts .wp-block-post-template { display:grid; gap: var(--wp-theme-gap); }
+.wp-theme-latest-posts .wp-block-post { border:1px solid var(--wp-theme-line); border-radius: var(--wp-theme-radius); overflow:hidden; background:#fff; }
+.wp-theme-latest-posts .wp-block-post > * { margin: 0; }
+.wp-theme-latest-posts .wp-block-post .wp-block-post-featured-image { margin-bottom: 0; }
+.wp-theme-latest-posts .wp-block-post .wp-block-post-title,
+.wp-theme-latest-posts .wp-block-post .wp-block-post-excerpt,
+.wp-theme-latest-posts .wp-block-post .wp-block-post-date { padding-inline: 1rem; }
+.wp-theme-latest-posts .wp-block-post .wp-block-post-title { padding-top: 1rem; }
+.wp-theme-latest-posts .wp-block-post .wp-block-post-excerpt { padding-bottom: 1rem; }
+.is-style-wp-theme-hidden-title > .wp-block-post-title { position:absolute; left:-9999px; }
+@media (max-width: 991px) {
+  .admin-bar .wp-theme-site-header { top: 46px; }
+  .wp-theme-grid--3 { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .wp-theme-header-main { flex-wrap: wrap; padding-block: .75rem; }
+}
+@media (max-width: 782px) {
+  .admin-bar .wp-theme-site-header { top: 46px; }
+}
+@media (max-width: 640px) {
+  .wp-theme-grid--3, .wp-theme-grid--2 { grid-template-columns: 1fr; }
+  .wp-theme-header-actions, .wp-theme-header-top { width: 100%; justify-content: flex-start; }
+}
 
 
-.wp-theme-demo-homepage{padding:0}
-.wp-theme-demo-homepage .wp-theme-demo-kicker{display:inline-block;padding:.45rem .85rem;border:1px solid #dbe4f0;border-radius:999px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#475569;background:#fff}
-.wp-theme-demo-homepage .wp-theme-demo-heading{letter-spacing:-.035em;line-height:1.03}
-.wp-theme-demo-homepage .wp-theme-demo-copy{color:#64748b;font-size:1.08rem}
-.wp-theme-demo-homepage .wp-theme-demo-stat{padding:1rem 1.25rem;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
-.wp-theme-demo-homepage .wp-theme-demo-card{padding:1.5rem;border:1px solid #e2e8f0;border-radius:22px;background:#fff;height:100%;box-shadow:0 12px 30px rgba(15,23,42,.05)}
-.wp-theme-demo-homepage .wp-theme-demo-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;font-weight:700;font-size:1.05rem;margin-bottom:1rem}
-.wp-theme-demo-homepage .wp-theme-demo-dark{background:#0f172a;color:#fff}
-.wp-theme-demo-homepage .wp-theme-demo-dark p{color:#cbd5e1}
-.wp-theme-demo-homepage .wp-theme-demo-pricing-popular{position:relative;border-color:#2563eb}
-.wp-theme-demo-homepage .wp-theme-demo-pricing-popular:before{content:"Most Popular";position:absolute;top:-12px;right:18px;background:#2563eb;color:#fff;font-size:.72rem;padding:.35rem .6rem;border-radius:999px}
-.wp-theme-demo-homepage .wp-theme-demo-logo img{opacity:.72;filter:grayscale(1)}
-.wp-theme-demo-homepage .btn{border-radius:999px}
+/* Full-width main content: Bootstrap containers control width */
+#wp-theme-main,
+#wp-theme-main.wp-block-group,
+main#wp-theme-main {
+  max-width: none;
+  width: 100%;
+}
+#wp-theme-main > .alignwide,
+#wp-theme-main > .alignfull {
+  max-width: none;
+}
+
+
+/* Keep WPBB layout rows centered across templates */
+.wpbb-row.row {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Keep block template parts full width */
+.wp-theme-template-part,
+.wp-theme-template-part.alignfull,
+.wp-site-blocks > header.wp-theme-template-part,
+.wp-site-blocks > footer.wp-theme-template-part {
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+
+.wp-theme-menu-shortcode .menu,
+.wp-theme-menu-shortcode ul{list-style:none;margin:0;padding:0;}
+.wp-theme-menu-shortcode .menu{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;}
+.wp-theme-menu-shortcode .menu-item{position:relative;}
+.wp-theme-menu-shortcode .sub-menu{display:block;margin-top:.5rem;padding-left:1rem;}
+.wp-theme-menu-shortcode a{text-decoration:none;}
+.wp-theme-menu-shortcode--empty{padding:.75rem 1rem;border:1px dashed rgba(148,163,184,.55);border-radius:12px;color:#64748b;background:rgba(255,255,255,.6);}
+.wp-theme-footer-dark .wp-theme-menu-shortcode a{color:#fff;}
+
+
+/* Demo/header/footer improvements */
+.wpbb-row.row{margin-left:auto;margin-right:auto;}
+.wp-theme-site-header{position:sticky;top:0;z-index:1000;}
+.wp-theme-site-logo-img{max-width:220px;height:auto;display:block;}
+.wp-theme-header-search .wp-block-search,.wp-theme-header-search form{margin-bottom:0;}
+.wp-theme-menu-shortcode .menu,.wp-theme-menu-shortcode .navbar-nav{list-style:none;margin:0;padding:0;}
+.wp-theme-menu-shortcode .menu-item{position:relative;}
+.wp-theme-menu-shortcode .sub-menu{display:none;position:absolute;top:100%;left:0;min-width:220px;background:#fff;border:1px solid rgba(15,23,42,.1);padding:12px;list-style:none;z-index:50;}
+.wp-theme-menu-shortcode .menu-item:hover>.sub-menu{display:block;}
+.wp-theme-header-extras .wp-theme-header-extra,.wp-theme-header-extras .wp-theme-header-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(15,23,42,.12);background:#fff;color:#0f172a;text-decoration:none;font-size:14px;}
+.wp-theme-header-extras .wp-theme-header-extra--theme{cursor:pointer;}
+.wp-theme-header-extra--lang .separator{opacity:.5;margin:0 6px;}
+body.wp-theme-dark-mode{background:#0f172a;color:#e2e8f0;}
+body.wp-theme-dark-mode .wp-theme-site-header,body.wp-theme-dark-mode .wp-theme-header-extras .wp-theme-header-extra{background:#111827;color:#e5e7eb;border-color:rgba(255,255,255,.12);}
+body.wp-theme-dark-mode .wp-theme-menu-shortcode .sub-menu{background:#111827;color:#e5e7eb;border-color:rgba(255,255,255,.12);}
+.wp-theme-footer-dark .wp-theme-menu-shortcode a{color:#fff;text-decoration:none;}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .sub-menu{position:static;display:block;background:transparent;border:0;padding:6px 0 0;}
+
+/* Header / menu refresh */
+.wp-theme-menu-shortcode--header{position:relative;}
+.wp-theme-menu-toggle{display:none;align-items:center;gap:.65rem;border-radius:999px;padding:.65rem 1rem;font-weight:600;}
+.wp-theme-menu-toggle__bars{display:inline-flex;flex-direction:column;gap:4px;}
+.wp-theme-menu-toggle__bars span{display:block;width:18px;height:2px;background:currentColor;border-radius:999px;}
+.wp-theme-header-nav{position:relative;}
+.wp-theme-header-nav > .menu,
+.wp-theme-header-nav > ul{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1.25rem;}
+.wp-theme-header-nav .nav-link{display:inline-flex;align-items:center;padding:.5rem 0;color:#0f172a;font-weight:600;}
+.wp-theme-header-nav .menu-item-has-children > .nav-link::after{content:'▾';font-size:.72em;margin-left:.35rem;opacity:.6;}
+.wp-theme-header-nav .dropdown-menu,
+.wp-theme-header-nav .sub-menu{display:none;position:absolute;top:100%;left:0;min-width:240px;padding:.85rem;background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:16px;box-shadow:0 22px 48px rgba(15,23,42,.14);z-index:60;}
+.wp-theme-header-nav .menu-item:hover > .sub-menu,
+.wp-theme-header-nav .menu-item:hover > .dropdown-menu,
+.wp-theme-header-nav .menu-item-open > .sub-menu,
+.wp-theme-header-nav .menu-item-open > .dropdown-menu{display:block;}
+.wp-theme-header-nav .dropdown-item{padding:.65rem .8rem;border-radius:10px;white-space:nowrap;}
+.wp-theme-header-nav .dropdown-item:hover{background:#eff6ff;color:#1d4ed8;}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel{display:none;position:absolute;left:0;right:0;top:calc(100% + 14px);z-index:70;border-radius:24px;background:#fff;box-shadow:0 30px 70px rgba(15,23,42,.14);}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel .card-body{padding:1.5rem;}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel.is-active{display:block;}
+.wp-theme-menu-shortcode--header.wp-theme-menu-mode--megamenu .menu-item-has-children > .dropdown-menu,
+.wp-theme-menu-shortcode--header.wp-theme-menu-mode--megamenu .menu-item-has-children > .sub-menu{display:none !important;}
+.wp-theme-header-extras{row-gap:.5rem;}
+.wp-theme-header-extra--mega{font-weight:600;}
+.wp-theme-header-cta{border-radius:999px;padding-inline:1.1rem;}
+
+/* Footer cleanup */
+.wp-theme-footer-dark .wp-theme-menu-shortcode ul.navbar-nav{display:flex;flex-direction:column;gap:.35rem;align-items:flex-start;}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .menu-item{width:100%;}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .nav-link,
+.wp-theme-footer-dark .wp-theme-menu-shortcode .dropdown-item{display:block;padding:.25rem 0;color:#fff;opacity:.9;}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .sub-menu,
+.wp-theme-footer-dark .wp-theme-menu-shortcode .dropdown-menu{display:block;position:static;min-width:0;padding:.35rem 0 0 1rem;background:transparent;border:0;box-shadow:none;}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .menu-item-has-children > .nav-link::after{content:'';}
+
+/* Better demo sections */
+.wp-theme-demo-homepage{max-width:1200px;}
+.wp-theme-demo-card{height:100%;padding:1.5rem;border:1px solid rgba(15,23,42,.08);border-radius:22px;background:#fff;box-shadow:0 12px 30px rgba(15,23,42,.05);}
+.wp-theme-demo-kicker{display:inline-block;margin-bottom:.75rem;padding:.25rem .65rem;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.wp-theme-demo-heading{max-width:13ch;line-height:1.05;}
+.wp-theme-demo-copy{max-width:60ch;color:#475569;}
+.wp-theme-demo-stat{padding:1rem 1.1rem;border-radius:18px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 10px 22px rgba(15,23,42,.05);text-align:left;}
+.wp-theme-demo-logo img{filter:grayscale(1);opacity:.75;transition:all .25s ease;}
+.wp-theme-demo-logo img:hover{filter:none;opacity:1;transform:translateY(-2px);}
+.wp-theme-demo-cta-row{position:relative;overflow:hidden;}
+.wp-theme-demo-cta-row::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg, rgba(15,23,42,.78), rgba(37,99,235,.56));}
+.wp-theme-demo-cta-row > .wpbb-column{position:relative;z-index:2;}
+.wp-theme-demo-cta-row h2{font-size:clamp(2rem,5vw,4.25rem);line-height:1;max-width:12ch;margin-inline:auto;}
+.wp-theme-demo-cta-row p{max-width:48ch;margin-inline:auto;opacity:.96;}
+
+/* Mobile header */
+@media (max-width: 1199.98px){
+  .wp-theme-site-header{padding-inline:1rem;}
+  .wp-theme-menu-toggle{display:inline-flex;margin-inline:auto;}
+  .wp-theme-header-nav{display:none;width:100%;padding-top:1rem;}
+  .wp-theme-menu-shortcode--header.is-open .wp-theme-header-nav{display:block;}
+  .wp-theme-header-nav > .menu,
+  .wp-theme-header-nav > ul{flex-direction:column;align-items:stretch;gap:.35rem;padding:1rem;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 18px 40px rgba(15,23,42,.08);}
+  .wp-theme-header-nav .menu-item{width:100%;}
+  .wp-theme-header-nav .nav-link{justify-content:space-between;padding:.85rem 1rem;border-radius:14px;background:#f8fafc;}
+  .wp-theme-header-nav .sub-menu,
+  .wp-theme-header-nav .dropdown-menu{position:static;min-width:0;margin-top:.35rem;padding:.35rem 0 .35rem 1rem;border:0;box-shadow:none;background:transparent;}
+  .wp-theme-menu-shortcode--header .wp-theme-mega-panel{display:none !important;}
+}
+
+/* Small speed helpers */
+img[loading="lazy"]{content-visibility:auto;}
+
+
+/* v20 visual polish */
+:root{--wp-theme-line:rgba(15,23,42,.08);--wp-theme-soft:#f8fafc;--wp-theme-navy:#0f172a;--wp-theme-blue:#2563eb;}
+body{background:#fff;color:var(--wp-text-color)}
+.wpbb-row.row{margin-left:auto;margin-right:auto}
+.wp-theme-site-header{position:sticky;top:0;z-index:1100;background:rgba(255,255,255,.96);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--wp-theme-line);transition:box-shadow .2s ease,background .2s ease,transform .2s ease}
+body.wp-theme-scrolled .wp-theme-site-header,.wp-theme-site-header.is-scrolled{box-shadow:0 16px 44px rgba(15,23,42,.08)}
+.wp-theme-site-logo-img{max-width:220px;height:auto}
+.wp-theme-header-search .card-body{padding:0}
+.wp-theme-header-search .form-control{min-height:46px;border-radius:16px;border:1px solid #d7e0ea;background:#f8fafc;padding-inline:1rem}
+.wp-theme-header-nav > .menu,.wp-theme-header-nav > ul{gap:1rem}
+.wp-theme-header-nav .nav-link{font-weight:600;color:#0f172a;text-decoration:none}
+.wp-theme-header-nav .menu-item{position:relative}
+.wp-theme-header-nav .menu-item > .sub-menu,.wp-theme-header-nav .menu-item > .dropdown-menu{margin-top:10px}
+.wp-theme-header-nav .dropdown-item{display:block;color:#0f172a;text-decoration:none}
+.wp-theme-menu-shortcode--header .wp-theme-menu-toggle{display:none;align-items:center;justify-content:center;gap:.75rem;padding:.8rem 1rem;border-radius:18px;border:1px solid #dbe4f0;background:#fff;font-weight:700;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.wp-theme-menu-toggle__bars{position:relative;width:20px;height:14px;display:inline-block}
+.wp-theme-menu-toggle__bars span{position:absolute;left:0;right:0;height:2px;border-radius:999px;background:#0f172a;transition:transform .18s ease,opacity .18s ease,top .18s ease}
+.wp-theme-menu-toggle__bars span:nth-child(1){top:0}.wp-theme-menu-toggle__bars span:nth-child(2){top:6px}.wp-theme-menu-toggle__bars span:nth-child(3){top:12px}
+.wp-theme-menu-shortcode--header.is-open .wp-theme-menu-toggle__bars span:nth-child(1){top:6px;transform:rotate(45deg)}
+.wp-theme-menu-shortcode--header.is-open .wp-theme-menu-toggle__bars span:nth-child(2){opacity:0}
+.wp-theme-menu-shortcode--header.is-open .wp-theme-menu-toggle__bars span:nth-child(3){top:6px;transform:rotate(-45deg)}
+.wp-theme-header-extras .wp-theme-header-extra,.wp-theme-header-extras .wp-theme-header-cta{min-height:42px;padding-inline:.9rem;border-radius:999px;border:1px solid #e2e8f0;background:#fff;color:#0f172a;text-decoration:none;box-shadow:none}
+.wp-theme-header-extras .wp-theme-header-cta{background:#2563eb;border-color:#2563eb;color:#fff}
+.wp-theme-header-extras .wp-theme-header-extra:hover,.wp-theme-header-extras .wp-theme-header-cta:hover{transform:translateY(-1px)}
+.wp-theme-footer-dark{background:#0f172a!important;color:#cbd5e1}
+.wp-theme-footer-dark .wp-theme-site-logo-link img{filter:brightness(0) invert(1) grayscale(1)}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .nav-link,.wp-theme-footer-dark .wp-theme-menu-shortcode .dropdown-item,.wp-theme-footer-dark a{color:#fff!important;text-decoration:none}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .nav-link{opacity:.92}
+.wp-theme-footer-dark .wp-theme-menu-shortcode .sub-menu,.wp-theme-footer-dark .wp-theme-menu-shortcode .dropdown-menu{padding-left:0;margin-top:.25rem}
+.wp-theme-demo-homepage{max-width:1200px;background:#fff;border:1px solid #e5edf7;border-radius:28px;box-shadow:0 18px 45px rgba(15,23,42,.04)}
+.wp-theme-demo-homepage--hero{border-radius:32px}
+.wp-theme-demo-homepage--logos .wpbb-column{display:flex;justify-content:center}
+.wp-theme-demo-homepage .wp-theme-demo-card,.wp-theme-demo-contact-card{background:#fff;border:1px solid #e2e8f0;border-radius:22px;box-shadow:0 16px 35px rgba(15,23,42,.05)}
+.wp-theme-demo-cta-row{padding-inline:1rem;background-color:transparent!important}
+.wp-theme-demo-cta-box{max-width:760px;margin:0 auto;padding:2rem 2.25rem;border-radius:28px;background:rgba(255,255,255,.88);backdrop-filter:blur(6px);box-shadow:0 20px 44px rgba(15,23,42,.14)}
+.wp-theme-demo-cta-box h2{margin:.35rem 0 0;color:#0f172a}
+.wp-theme-demo-cta-box p{margin:1rem 0 0;color:#475569}
+.wp-theme-demo-contact-map-row .wpbb-google-map__frame{min-height:460px;border-radius:0!important;overflow:hidden}
+@media (max-width:1199.98px){
+  .wp-theme-menu-shortcode--header .wp-theme-menu-toggle{display:inline-flex}
+  .wp-theme-header-nav{display:none;width:100%;padding-top:1rem}
+  .wp-theme-menu-shortcode--header.is-open .wp-theme-header-nav{display:block}
+  .wp-theme-header-nav > .menu,.wp-theme-header-nav > ul{flex-direction:column;align-items:stretch;gap:.45rem;padding:1rem;border-radius:24px;background:#fff;border:1px solid #dbe4f0;box-shadow:0 20px 44px rgba(15,23,42,.08)}
+  .wp-theme-header-nav .nav-link{justify-content:space-between;padding:.9rem 1rem;border-radius:14px;background:#f8fafc}
+  .wp-theme-header-nav .sub-menu,.wp-theme-header-nav .dropdown-menu{position:static;display:none;box-shadow:none;border:0;background:transparent;padding:.35rem 0 0 1rem}
+  .wp-theme-header-nav .menu-item-open > .sub-menu,.wp-theme-header-nav .menu-item-open > .dropdown-menu{display:block}
+}
+@media (max-width:767.98px){
+  .wp-theme-site-header{padding-inline:.5rem}
+  .wp-theme-demo-homepage{border-radius:22px}
+  .wp-theme-demo-cta-box{padding:1.5rem}
+}
+
+/* Megamenu layout hotfix */
+.wp-theme-menu-shortcode--header{position:relative;width:100%;}
+.wp-theme-header-nav{position:relative;z-index:20;}
+.wp-theme-header-nav > .menu,
+.wp-theme-header-nav > ul{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:1rem;
+  width:100%;
+}
+.wp-theme-header-nav .menu-item{display:flex;align-items:center;}
+.wp-theme-header-nav .nav-link{display:inline-flex;align-items:center;line-height:1.2;}
+.wp-theme-mega-panels{position:absolute;left:0;right:0;top:calc(100% + 10px);z-index:70;pointer-events:none;}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel{display:none;pointer-events:auto;position:relative;left:auto;right:auto;top:auto;width:100%;max-width:1200px;margin:0 auto;border:1px solid rgba(15,23,42,.08);border-radius:20px;background:#fff;box-shadow:0 30px 60px rgba(15,23,42,.14);}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel.is-active{display:block;}
+.wp-theme-menu-shortcode--header.wp-theme-menu-mode--megamenu .wp-theme-header-nav .menu-item-has-children > .sub-menu,
+.wp-theme-menu-shortcode--header.wp-theme-menu-mode--megamenu .wp-theme-header-nav .menu-item-has-children > .dropdown-menu{display:none !important;}
+body.wp-theme-dark-mode .wp-theme-menu-shortcode--header .wp-theme-mega-panel{background:#0f172a;border-color:rgba(255,255,255,.08);color:#e5e7eb;}
+body.wp-theme-dark-mode .wp-theme-header-nav > .menu,
+body.wp-theme-dark-mode .wp-theme-header-nav > ul{background:transparent;}
+body.wp-theme-dark-mode .wp-theme-header-nav .nav-link,
+body.wp-theme-dark-mode .wp-theme-header-nav .dropdown-item{color:#f8fafc;}
+body.wp-theme-dark-mode .wp-theme-header-nav .dropdown-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+body.wp-theme-dark-mode .wp-theme-menu-shortcode--header .wp-theme-menu-toggle{background:#0f172a;border-color:rgba(255,255,255,.14);color:#fff;}
+body.wp-theme-dark-mode .wp-theme-header-search .form-control{background:#0f172a;color:#fff;border-color:rgba(255,255,255,.14);}
+body.wp-theme-dark-mode .wp-theme-footer-dark,
+body.wp-theme-dark-mode .wp-theme-footer-dark a{color:#fff;}
+@media (max-width:1199.98px){
+  .wp-theme-mega-panels{display:none !important;}
+  .wp-theme-header-nav > .menu,
+  .wp-theme-header-nav > ul{justify-content:stretch;}
+  .wp-theme-header-nav .menu-item{display:block;width:100%;}
+  .wp-theme-header-nav .nav-link{display:flex;width:100%;}
+}
 
 
 
-.wp-theme-footer-dark,
-.wp-theme-footer-dark p,
-.wp-theme-footer-dark .wp-block-heading{color:#fff}
-.wp-theme-footer-dark a,
-.wp-theme-footer-dark .wp-block-navigation a{color:#fff !important;text-decoration:none}
-.wp-theme-footer-dark a:hover,
-.wp-theme-footer-dark .wp-block-navigation a:hover{opacity:.85}
-.wpbb-ajax-search.border-0.shadow-none,
-.wpbb-ajax-search.border-0.shadow-none.card{border:0 !important;box-shadow:none !important;background:transparent}
-.wpbb-ajax-search.border-0.shadow-none .card-body{padding:0}
-.wpbb-ajax-search.border-0.shadow-none .card-title{display:none}
+/* Final polish pass */
+.wpbb-row.row{margin-left:auto;margin-right:auto;}
+.wp-theme-site-header{position:sticky;top:0;z-index:80}
+.wp-theme-site-header.is-scrolled{box-shadow:0 18px 40px rgba(15,23,42,.10)}
+.wp-theme-header-nav>.menu,.wp-theme-header-nav>ul{align-items:center;row-gap:.5rem;column-gap:1rem}
+.wp-theme-header-nav .menu-item>a,.wp-theme-header-nav .nav-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.55rem .85rem;border-radius:999px;text-decoration:none}
+.wp-theme-header-nav .menu-item>a:hover,.wp-theme-header-nav .nav-link:hover{background:rgba(37,99,235,.08);color:var(--wp-link-hover-color)}
+.wp-theme-menu-shortcode--header .menu-item-has-children{position:relative}
+.wp-theme-mega-panels{position:absolute;left:0;right:0;top:100%;pointer-events:none}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel{max-width:min(1180px,100%);margin:14px auto 0;pointer-events:auto;border:1px solid rgba(15,23,42,.08);overflow:hidden}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel .card-body{display:grid;gap:1rem}
+.wp-theme-menu-shortcode--header .wp-theme-mega-panel.is-active{display:block}
+.wp-theme-footer-dark{background:#0f172a;color:#e5e7eb}
+.wp-theme-footer-dark a{color:#f8fafc}
+.wp-theme-footer-dark .wp-theme-menu-shortcode ul{list-style:none;padding-left:0;margin:0;display:grid;gap:.55rem}
+.wp-theme-footer-dark .wp-theme-menu-shortcode li{margin:0}
+.wp-theme-footer-dark .wp-theme-menu-shortcode a{text-decoration:none;opacity:.9}
+.wp-theme-footer-dark .wp-theme-menu-shortcode a:hover{opacity:1;text-decoration:underline}
+.wp-theme-demo-homepage{--demo-space:clamp(2.5rem,4vw,5rem)}
+.wp-theme-demo-homepage.py-5,.wp-theme-demo-homepage.py-xl-6{padding-top:var(--demo-space)!important;padding-bottom:var(--demo-space)!important}
+.wp-theme-demo-kicker{letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#2563eb}
+.wp-theme-demo-heading{max-width:14ch;line-height:1.05;margin-bottom:1rem}
+.wp-theme-demo-copy{max-width:62ch;color:#475569}
+.wp-theme-demo-card{height:100%;padding:1.5rem;border:1px solid rgba(15,23,42,.08);border-radius:24px;background:#fff;box-shadow:0 18px 45px rgba(15,23,42,.05)}
+.wp-theme-demo-stat,.wp-theme-demo-card,.wp-theme-demo-cta-box{transition:transform .25s ease, box-shadow .25s ease}
+.wp-theme-demo-card:hover,.wp-theme-demo-stat:hover,.wp-theme-demo-cta-box:hover{transform:translateY(-2px);box-shadow:0 20px 50px rgba(15,23,42,.10)}
+.wp-theme-demo-stat{height:100%;padding:1.1rem 1rem;border-radius:20px;background:#fff;border:1px solid rgba(15,23,42,.08)}
+.wp-theme-demo-logo img{display:block;max-width:180px;margin-inline:auto;opacity:.9}
+.wp-theme-demo-cta-row{background-position:center;background-size:cover}
+.wp-theme-demo-cta-box .btn,.wpbb-button-wrap .btn{vertical-align:middle}
+.wp-theme-header-extra,.wp-theme-header-cta,.wp-theme-menu-toggle{min-height:44px}
+body.wp-theme-dark-mode{background:#0b1220;color:#e2e8f0}
+body.wp-theme-dark-mode .wp-theme-site-header{background:rgba(11,18,32,.88);border-color:rgba(255,255,255,.08)}
+body.wp-theme-dark-mode .wp-theme-header-nav .menu-item>a,body.wp-theme-dark-mode .wp-theme-header-nav .nav-link{color:#e2e8f0}
+body.wp-theme-dark-mode .wp-theme-header-nav .menu-item>a:hover,body.wp-theme-dark-mode .wp-theme-header-nav .nav-link:hover{background:rgba(255,255,255,.08);color:#fff}
+body.wp-theme-dark-mode .wp-theme-menu-shortcode--header .wp-theme-mega-panel,
+body.wp-theme-dark-mode .wp-theme-demo-card,
+body.wp-theme-dark-mode .wp-theme-demo-stat,
+body.wp-theme-dark-mode .wp-theme-demo-cta-box{background:#111827;color:#e5e7eb;border-color:rgba(255,255,255,.08)}
+body.wp-theme-dark-mode .wp-theme-demo-copy,
+body.wp-theme-dark-mode .wp-theme-demo-cta-box p{color:#cbd5e1}
+body.wp-theme-dark-mode .wp-theme-demo-kicker{color:#93c5fd}
+body.wp-theme-dark-mode .wp-theme-demo-heading,
+body.wp-theme-dark-mode .wp-theme-demo-cta-box h2{color:#fff}
+@media (max-width:1199.98px){
+  .wp-theme-menu-toggle{display:inline-flex}
+  .wp-theme-header-nav{display:none;width:100%;padding-top:.75rem}
+  .wp-theme-menu-shortcode--header.is-open .wp-theme-header-nav{display:block}
+  .wp-theme-header-nav>.menu,.wp-theme-header-nav>ul{display:grid !important;grid-template-columns:1fr;gap:.35rem;padding:1rem;border:1px solid rgba(15,23,42,.08);border-radius:20px;background:#fff}
+  .wp-theme-menu-shortcode--header .menu-item-has-children>.dropdown-menu,
+  .wp-theme-menu-shortcode--header .menu-item-has-children>.sub-menu{display:none;position:static;box-shadow:none;margin-top:.35rem;padding-left:.75rem;border:none;background:transparent}
+  .wp-theme-menu-shortcode--header .menu-item-open>.dropdown-menu,
+  .wp-theme-menu-shortcode--header .menu-item-open>.sub-menu{display:block}
+  .wp-theme-mega-panels{display:none!important}
+  body.wp-theme-dark-mode .wp-theme-header-nav>.menu,
+  body.wp-theme-dark-mode .wp-theme-header-nav>ul{background:#111827;border-color:rgba(255,255,255,.08)}
+}
+@media (max-width:767.98px){
+  .wp-theme-demo-heading{max-width:none}
+  .wp-theme-demo-cta-box{padding:1.5rem}
+}

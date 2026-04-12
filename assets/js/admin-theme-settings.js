@@ -8,6 +8,17 @@ document.addEventListener('DOMContentLoaded', function () {
     return field.querySelector(selector || 'input, select, textarea');
   }
 
+  function setFieldValue(dataName, value) {
+    const input = getFieldInput(dataName, 'input, select, textarea');
+    if (!input) return;
+    input.value = value || '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    if (window.acf && typeof window.acf.doAction === 'function') {
+      window.acf.doAction('change', input);
+    }
+  }
+
   function initTypographyUnits() {
     const header = document.querySelector('.wp-theme-size-header');
     if (header && !header.dataset.enhanced) {
@@ -138,6 +149,22 @@ function initAnimationUI() {
       const className = button.getAttribute('data-class') || '';
       if (animationSelect) animationSelect.value = className;
       replayPreview(className);
+    });
+  });
+
+
+  document.querySelectorAll('.bbtheme-apply-demo').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = '1';
+    button.addEventListener('click', function () {
+      setFieldValue('theme_anim_preset_hero', button.getAttribute('data-hero') || '');
+      setFieldValue('theme_anim_preset_heading', button.getAttribute('data-heading') || '');
+      setFieldValue('theme_anim_preset_text', button.getAttribute('data-text') || '');
+      setFieldValue('theme_anim_preset_media', button.getAttribute('data-media') || '');
+      setFieldValue('theme_anim_preset_card', button.getAttribute('data-card') || '');
+      setFieldValue('theme_anim_preset_button', button.getAttribute('data-button') || '');
+      replayPreview(button.getAttribute('data-hero') || '');
+      showTab('#bbtheme-tab-general');
     });
   });
 
