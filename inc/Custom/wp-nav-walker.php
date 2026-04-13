@@ -60,6 +60,9 @@ class bootstrap_5_wp_nav_menu_walker extends Walker_Nav_menu {
     $item_output .= '<a' . $attributes . '>';
     $item_output .= $args->link_before . apply_filters('the_title', $item->title, $item->ID) . $args->link_after;
     $item_output .= '</a>';
+    if ($depth === 0 && !empty($item->wp_theme_megamenu_panel)) {
+      $item_output .= $item->wp_theme_megamenu_panel;
+    }
     $item_output .= $args->after;
 
     $output .= apply_filters('walker_nav_menu_start_el', $item_output, $item, $depth, $args);

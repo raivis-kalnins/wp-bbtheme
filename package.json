@@ -5,15 +5,11 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch",
-    "prod": "vite build",
-    "preview": "vite preview"
+    "dev": "node -e \"console.log('Prebuilt assets are included. No local build step is required.')\"",
+    "prod": "node -e \"console.log('Prebuilt assets are included. No local build step is required.')\"",
+    "preview": "node -e \"console.log('Prebuilt assets are included. No preview server is configured.')\""
   },
-  "devDependencies": {
-    "sass": "^1.89.1",
-    "vite": "^4.4.5"
-  },
-  "dependencies": {
-    "glightbox": "^3.3.1"
-  }
+  "devDependencies": {},
+  "dependencies": {},
+  "packageManager": "yarn@1.22.22"
 }

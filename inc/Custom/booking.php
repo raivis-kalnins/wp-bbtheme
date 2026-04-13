@@ -52,10 +52,10 @@ if (!function_exists('wp_theme_booking_form_shortcode')) {
                 <input type="hidden" name="action" value="wp_theme_submit_booking">
                 <?php wp_nonce_field('wp_theme_submit_booking', 'wp_theme_booking_nonce'); ?>
                 <div class="row g-3">
-                    <div class="col-12 col-md-6"><label><?php esc_html_e('Meeting date', 'wp-theme'); ?></label><input class="form-control" type="date" name="booking_date" required min="<?php echo esc_attr(date('Y-m-d')); ?>"></div>
-                    <div class="col-12 col-md-6"><label><?php esc_html_e('Full name', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_name" required></div>
-                    <div class="col-12 col-md-6"><label><?php esc_html_e('Email', 'wp-theme'); ?></label><input class="form-control" type="email" name="booking_email" required></div>
-                    <div class="col-12 col-md-6"><label><?php esc_html_e('Phone', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_phone"></div>
+                    <div class="col-12"><label><?php esc_html_e('Meeting date', 'wp-theme'); ?></label><input class="form-control" type="date" name="booking_date" required min="<?php echo esc_attr(date('Y-m-d')); ?>"></div>
+                    <div class="col-12"><label><?php esc_html_e('Full name', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_name" required></div>
+                    <div class="col-12"><label><?php esc_html_e('Email', 'wp-theme'); ?></label><input class="form-control" type="email" name="booking_email" required></div>
+                    <div class="col-12"><label><?php esc_html_e('Phone', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_phone"></div>
                     <div class="col-12"><label><?php esc_html_e('Notes', 'wp-theme'); ?></label><textarea class="form-control" name="booking_notes" rows="4"></textarea></div>
                     <div class="col-12"><button class="btn btn-primary" type="submit"><?php esc_html_e('Book meeting', 'wp-theme'); ?></button></div>
                 </div>

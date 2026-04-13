@@ -312,3 +312,8 @@ body.settings_page_wp-theme-settings .bbtheme-animation-table code{
     align-items:stretch;
   }
 }
+
+
+body.settings_page_wp-theme-settings .wp-theme-cpt-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;}
+body.settings_page_wp-theme-settings .wp-theme-login-url-preview{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+body.settings_page_wp-theme-settings .wp-theme-login-url-preview code{display:inline-block;padding:8px 10px;border:1px solid #dcdcde;border-radius:8px;background:#fff;}

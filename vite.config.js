@@ -8,8 +8,7 @@ export default defineConfig({
                 api: "modern-compiler",
                 silenceDeprecations: [
                     'import',
-                    'global-builtin',
-                    'mixed-decls'
+                    'global-builtin'
                 ],
                 quietDeps: true
             },

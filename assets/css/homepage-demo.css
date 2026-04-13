@@ -45,3 +45,19 @@
 .wpbb-ajax-search.border-0.shadow-none.card{border:0 !important;box-shadow:none !important;background:transparent}
 .wpbb-ajax-search.border-0.shadow-none .card-body{padding:0}
 .wpbb-ajax-search.border-0.shadow-none .card-title{display:none}
+
+
+.wp-theme-demo-homepage,
+.wp-theme-demo-homepage .wp-theme-demo-section,
+.wp-theme-demo-homepage .wp-theme-demo-dark,
+.wp-theme-demo-homepage .wp-theme-demo-cta,
+.wp-theme-demo-homepage .wp-theme-demo-footer {
+    background: transparent !important;
+    background-color: #fff !important;
+    color: #0f172a !important;
+}
+.wp-theme-demo-homepage .wp-theme-demo-dark p,
+.wp-theme-demo-homepage .wp-theme-demo-footer p,
+.wp-theme-demo-homepage .wp-theme-demo-footer a {
+    color: #0f172a !important;
+}
