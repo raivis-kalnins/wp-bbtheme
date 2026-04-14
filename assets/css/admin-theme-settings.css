@@ -313,7 +313,137 @@ body.settings_page_wp-theme-settings .bbtheme-animation-table code{
   }
 }
 
+body.settings_page_wp-theme-settings .wp-theme-general-intro,
+body.settings_page_wp-theme-settings .wp-theme-general-tools-wrap,
+body.settings_page_wp-theme-settings .wp-theme-general-note{
+  background:#fff;
+  border:1px solid #dcdcde;
+  border-radius:14px;
+  padding:12px 14px;
+}
 
-body.settings_page_wp-theme-settings .wp-theme-cpt-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;}
-body.settings_page_wp-theme-settings .wp-theme-login-url-preview{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
-body.settings_page_wp-theme-settings .wp-theme-login-url-preview code{display:inline-block;padding:8px 10px;border:1px solid #dcdcde;border-radius:8px;background:#fff;}
+body.settings_page_wp-theme-settings .wp-theme-general-tools{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0 0 8px;
+}
+
+body.settings_page_wp-theme-settings .wp-theme-general-tools .button{
+  min-height:34px;
+  line-height:32px;
+  border-radius:999px;
+}
+
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle,
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-field{
+  background:#fff;
+  border:1px solid #dcdcde;
+  border-radius:12px;
+  box-sizing:border-box;
+  margin-top:0 !important;
+  padding:10px 12px 8px;
+}
+
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle .acf-label,
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-field .acf-label{
+  margin-bottom:8px;
+}
+
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle .acf-label label,
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-field .acf-label label{
+  font-size:12px;
+  font-weight:700;
+}
+
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle .acf-switch{
+  float:left;
+}
+
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle .acf-input,
+body.settings_page_wp-theme-settings .acf-field.wp-theme-general-field .acf-input{
+  width:100%;
+}
+
+@media (max-width: 1024px){
+  body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle,
+  body.settings_page_wp-theme-settings .acf-field.wp-theme-general-field{
+    width:50% !important;
+  }
+}
+
+@media (max-width: 782px){
+  body.settings_page_wp-theme-settings .acf-field.wp-theme-general-toggle,
+  body.settings_page_wp-theme-settings .acf-field.wp-theme-general-field{
+    width:100% !important;
+  }
+}
+
+
+body.settings_page_wp-theme-settings .acf-postbox > .acf-fields > .acf-field:not([data-type="tab"]),
+body.settings_page_wp-theme-settings .acf-postbox > .inside > .acf-fields > .acf-field:not([data-type="tab"]) {
+  background:#fff;
+  border:1px solid #dcdcde;
+  border-radius:14px;
+  padding:12px 14px 10px;
+  margin-top:10px;
+  box-sizing:border-box;
+}
+body.settings_page_wp-theme-settings .acf-postbox > .acf-fields > .acf-field[data-type="message"],
+body.settings_page_wp-theme-settings .acf-postbox > .inside > .acf-fields > .acf-field[data-type="message"] {
+  background:#fff;
+}
+body.settings_page_wp-theme-settings .wp-theme-general-tools {
+  gap:8px;
+}
+body.settings_page_wp-theme-settings .wp-theme-general-tools .button {
+  min-height:34px;
+}
+body.edit-php .column-wp_theme_order {
+  width:64px;
+  text-align:center;
+}
+body.edit-php .wp-theme-order-handle {
+  cursor:grab;
+  width:34px;
+  height:30px;
+  padding:0;
+  border:1px solid #d0d7de;
+  border-radius:10px;
+  background:#fff;
+  color:#1f2937;
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  box-shadow:0 1px 2px rgba(15,23,42,.04);
+  vertical-align:middle;
+}
+body.edit-php .wp-theme-order-handle span {
+  display:block;
+  width:14px;
+  height:2px;
+  border-radius:999px;
+  background:#6b7280;
+}
+body.edit-php .wp-theme-order-handle:hover,
+body.edit-php .wp-theme-order-handle:focus {
+  border-color:#94a3b8;
+  background:#f8fafc;
+  outline:none;
+}
+body.edit-php .wp-theme-ordering-active #the-list tr {
+  cursor:move;
+}
+body.edit-php .wp-theme-ordering-active #the-list tr.ui-sortable-helper {
+  background:#fff;
+  box-shadow:0 10px 24px rgba(15,23,42,.14);
+}
+body.edit-php .wp-theme-ordering-active #the-list tr.wp-theme-order-saving {
+  opacity:.65;
+}
+body.edit-php .wp-theme-ordering-active #the-list tr.ui-sortable-placeholder td {
+  background:#f8fafc;
+  border-top:2px solid #2563eb;
+}

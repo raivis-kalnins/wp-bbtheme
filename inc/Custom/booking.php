@@ -52,10 +52,10 @@ if (!function_exists('wp_theme_booking_form_shortcode')) {
                 <input type="hidden" name="action" value="wp_theme_submit_booking">
                 <?php wp_nonce_field('wp_theme_submit_booking', 'wp_theme_booking_nonce'); ?>
                 <div class="row g-3">
-                    <div class="col-12"><label><?php esc_html_e('Meeting date', 'wp-theme'); ?></label><input class="form-control" type="date" name="booking_date" required min="<?php echo esc_attr(date('Y-m-d')); ?>"></div>
-                    <div class="col-12"><label><?php esc_html_e('Full name', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_name" required></div>
-                    <div class="col-12"><label><?php esc_html_e('Email', 'wp-theme'); ?></label><input class="form-control" type="email" name="booking_email" required></div>
-                    <div class="col-12"><label><?php esc_html_e('Phone', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_phone"></div>
+                    <div class="col-12 col-md-6"><label><?php esc_html_e('Meeting date', 'wp-theme'); ?></label><input class="form-control" type="date" name="booking_date" required min="<?php echo esc_attr(date('Y-m-d')); ?>"></div>
+                    <div class="col-12 col-md-6"><label><?php esc_html_e('Full name', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_name" required></div>
+                    <div class="col-12 col-md-6"><label><?php esc_html_e('Email', 'wp-theme'); ?></label><input class="form-control" type="email" name="booking_email" required></div>
+                    <div class="col-12 col-md-6"><label><?php esc_html_e('Phone', 'wp-theme'); ?></label><input class="form-control" type="text" name="booking_phone"></div>
                     <div class="col-12"><label><?php esc_html_e('Notes', 'wp-theme'); ?></label><textarea class="form-control" name="booking_notes" rows="4"></textarea></div>
                     <div class="col-12"><button class="btn btn-primary" type="submit"><?php esc_html_e('Book meeting', 'wp-theme'); ?></button></div>
                 </div>
@@ -106,6 +106,7 @@ if (!function_exists('wp_theme_handle_booking_submission')) {
             update_post_meta($post_id, '_booking_phone', $phone);
             update_post_meta($post_id, '_booking_notes', $notes);
             update_post_meta($post_id, '_booking_answered', 0);
+            update_post_meta($post_id, '_booking_status', 'active');
             $admin_email = get_option('admin_email');
             wp_mail($admin_email, sprintf(__('New booking for %s', 'wp-theme'), $date), "Name: {$name}\nEmail: {$email}\nPhone: {$phone}\nDate: {$date}\n\n{$notes}");
             if (wp_theme_acf_get('theme_booking_auto_reply', 'option', 0)) {
@@ -171,10 +172,12 @@ if (!function_exists('wp_theme_booking_dashboard_markup')) {
             $phone = get_post_meta($id, '_booking_phone', true);
             $notes = get_post_meta($id, '_booking_notes', true);
             $answered = (int) get_post_meta($id, '_booking_answered', true);
+            $status = get_post_meta($id, '_booking_status', true) ?: 'active';
             echo '<tr>';
             echo '<td>' . esc_html($date) . '</td>';
             echo '<td><strong>' . esc_html($name) . '</strong></td>';
             echo '<td><a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a><br>' . esc_html($phone) . '</td>';
+            echo '<td><span class="badge text-bg-' . ($status === 'canceled' ? 'danger' : 'success') . '">' . esc_html(ucfirst($status)) . '</span></td>';
             echo '<td>' . esc_html($notes) . '</td>';
             echo '<td>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -185,6 +188,13 @@ if (!function_exists('wp_theme_booking_dashboard_markup')) {
             echo '<button class="button button-secondary" type="submit">' . esc_html($answered ? __('Reply again','wp-theme') : __('Send reply','wp-theme')) . '</button>';
             echo '</form>';
             echo '</td>';
+            echo '<td><form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:flex;gap:6px;flex-wrap:wrap;">';
+            wp_nonce_field('wp_theme_manage_booking_' . $id, 'wp_theme_manage_nonce');
+            echo '<input type="hidden" name="action" value="wp_theme_manage_booking">';
+            echo '<input type="hidden" name="booking_id" value="' . esc_attr((string)$id) . '">';
+            if ($status !== 'canceled') { echo '<button class="button" name="booking_task" value="cancel" type="submit">' . esc_html__('Cancel','wp-theme') . '</button>'; }
+            echo '<button class="button button-link-delete" name="booking_task" value="delete" type="submit">' . esc_html__('Delete','wp-theme') . '</button>';
+            echo '</form></td>';
             echo '</tr>';
         }
         echo '</tbody></table></div></div></div>';
@@ -204,6 +214,80 @@ add_action('admin_post_wp_theme_reply_booking', function () {
         update_post_meta($booking_id, '_booking_answered', 1);
         update_post_meta($booking_id, '_booking_reply_message', $message);
     }
+    wp_safe_redirect(wp_get_referer() ?: admin_url('options-general.php?page=wp-theme-settings'));
+    exit;
+});
+
+
+if (!function_exists('wp_theme_booking_cleanup_tools_markup')) {
+    function wp_theme_booking_cleanup_tools_markup() {
+        if (!current_user_can('edit_theme_options')) {
+            return '';
+        }
+        $action = esc_url(admin_url('admin-post.php'));
+        ob_start();
+        echo '<div class="wp-theme-booking-tools"><strong>' . esc_html__('Cleanup tools', 'wp-theme') . '</strong><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
+        echo '<form method="post" action="' . $action . '">';
+        wp_nonce_field('wp_theme_cleanup_bookings', 'wp_theme_cleanup_nonce');
+        echo '<input type="hidden" name="action" value="wp_theme_cleanup_bookings"><input type="hidden" name="booking_cleanup_task" value="canceled"><button class="button" type="submit">' . esc_html__('Delete canceled now', 'wp-theme') . '</button></form>';
+        echo '<form method="post" action="' . $action . '">';
+        wp_nonce_field('wp_theme_cleanup_bookings', 'wp_theme_cleanup_nonce');
+        echo '<input type="hidden" name="action" value="wp_theme_cleanup_bookings"><input type="hidden" name="booking_cleanup_task" value="old"><button class="button" type="submit">' . esc_html__('Delete old now', 'wp-theme') . '</button></form>';
+        echo '</div><p style="margin-top:8px;opacity:.8;">' . esc_html__('Use the switches above for automatic cleanup, or run manual cleanup from these buttons.', 'wp-theme') . '</p></div>';
+        return ob_get_clean();
+    }
+}
+
+if (!function_exists('wp_theme_cleanup_bookings')) {
+    function wp_theme_cleanup_bookings($task = 'auto') {
+        if (!wp_theme_booking_enabled()) {
+            return 0;
+        }
+        $deleted = 0;
+        if ($task === 'canceled' || ($task === 'auto' && wp_theme_acf_get('theme_booking_delete_canceled', 'option', 0))) {
+            $posts = get_posts(['post_type' => 'theme_booking', 'post_status' => 'publish', 'posts_per_page' => 200, 'meta_key' => '_booking_status', 'meta_value' => 'canceled', 'fields' => 'ids']);
+            foreach ($posts as $post_id) {
+                wp_delete_post($post_id, true);
+                $deleted++;
+            }
+        }
+        if ($task === 'old' || ($task === 'auto' && wp_theme_acf_get('theme_booking_delete_old', 'option', 0))) {
+            $days = max(1, absint(wp_theme_acf_get('theme_booking_delete_old_days', 'option', 30)));
+            $cutoff = date('Y-m-d', strtotime('-' . $days . ' days', current_time('timestamp')));
+            $posts = get_posts(['post_type' => 'theme_booking', 'post_status' => 'publish', 'posts_per_page' => 500, 'meta_key' => '_booking_date', 'meta_value' => $cutoff, 'meta_compare' => '<=', 'fields' => 'ids']);
+            foreach ($posts as $post_id) {
+                wp_delete_post($post_id, true);
+                $deleted++;
+            }
+        }
+        return $deleted;
+    }
+}
+add_action('admin_init', function () {
+    if (is_admin()) {
+        wp_theme_cleanup_bookings('auto');
+    }
+});
+
+add_action('admin_post_wp_theme_manage_booking', function () {
+    if (!current_user_can('edit_theme_options')) wp_die('Not allowed');
+    $booking_id = absint($_POST['booking_id'] ?? 0);
+    if (!$booking_id || !wp_verify_nonce($_POST['wp_theme_manage_nonce'] ?? '', 'wp_theme_manage_booking_' . $booking_id)) wp_die('Invalid request');
+    $task = sanitize_key($_POST['booking_task'] ?? '');
+    if ($task === 'cancel') {
+        update_post_meta($booking_id, '_booking_status', 'canceled');
+    } elseif ($task === 'delete') {
+        wp_delete_post($booking_id, true);
+    }
+    wp_safe_redirect(wp_get_referer() ?: admin_url('options-general.php?page=wp-theme-settings'));
+    exit;
+});
+
+add_action('admin_post_wp_theme_cleanup_bookings', function () {
+    if (!current_user_can('edit_theme_options')) wp_die('Not allowed');
+    if (!wp_verify_nonce($_POST['wp_theme_cleanup_nonce'] ?? '', 'wp_theme_cleanup_bookings')) wp_die('Invalid request');
+    $task = sanitize_key($_POST['booking_cleanup_task'] ?? '');
+    wp_theme_cleanup_bookings($task === 'old' ? 'old' : 'canceled');
     wp_safe_redirect(wp_get_referer() ?: admin_url('options-general.php?page=wp-theme-settings'));
     exit;
 });

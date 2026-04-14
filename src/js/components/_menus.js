@@ -130,45 +130,11 @@ document.addEventListener("DOMContentLoaded", function() {
 		$(".block-polylang").css("display","none");
 	}
 
-	function syncMenuMode() {
-		const isMobileMenu = window.innerWidth < 1200;
-		$('body').toggleClass('wp-theme-mobile-menu', isMobileMenu);
-		$('.navbar-toggler-btn').css({"display":"block"});
-		$('.has-megamenu-panel').removeClass('is-megamenu-open');
-		$('.has-megamenu-panel > .megamenu-modal').attr('hidden', true);
+	if ( $("body nav.header-nav").hasClass("wp-nav-menu__megamenu") ) { 
+		$(".navbar-toggler-btn").css({"display":"none"});
+	} else {
+		$(".navbar-toggler-btn").css({"display":"block"}); 
 	}
-
-	function toggleMegaMenu($item, shouldOpen) {
-		const $panel = $item.children('.megamenu-modal');
-		if (!$panel.length) return;
-		$item.toggleClass('is-megamenu-open', shouldOpen);
-		$panel.attr('hidden', !shouldOpen);
-	}
-
-	syncMenuMode();
-	$(window).on('resize', syncMenuMode);
-
-	$(document).on('mouseenter focusin', '.has-megamenu-panel', function() {
-		if (window.innerWidth >= 1200) {
-			toggleMegaMenu($(this), true);
-		}
-	});
-
-	$(document).on('mouseleave focusout', '.has-megamenu-panel', function() {
-		if (window.innerWidth >= 1200) {
-			toggleMegaMenu($(this), false);
-		}
-	});
-
-	$(document).on('click', '.has-megamenu-panel > a', function(event) {
-		if (window.innerWidth < 1200) {
-			event.preventDefault();
-			const $item = $(this).parent();
-			const open = !$item.hasClass('is-megamenu-open');
-			$('.has-megamenu-panel').not($item).each(function(){ toggleMegaMenu($(this), false); });
-			toggleMegaMenu($item, open);
-		}
-	});
 
 	// Scroll Right & Back Horizontal scroll menu responsive
 	if ( window.innerWidth < 1024 ) {

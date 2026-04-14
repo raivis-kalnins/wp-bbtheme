@@ -36,9 +36,9 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_login_logo'           => '',
             'theme_login_logo_width'     => '160',
             'theme_login_logo_height'    => '80',
-            'theme_wp_admin_redirect_home' => 0,
-            'theme_custom_login_enabled' => 0,
-            'theme_custom_login_slug' => 'login',
+            'theme_redirect_wp_admin_home' => 0,
+            'theme_enable_custom_login_slug' => 0,
+            'theme_custom_login_slug'    => 'tfa-admin',
 
             'theme_general_cta_text'     => '',
             'theme_general_cta_url'      => '',
@@ -116,9 +116,31 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_motion_svg_class'     => 'is-animated-svg',
 
             'theme_enable_booking_cpt'    => 0,
+            'theme_enable_event_cpt'      => 0,
+            'theme_enable_products_cpt'   => 0,
+            'theme_enable_case_study_cpt' => 0,
+            'theme_enable_testimonial_cpt'=> 0,
+            'theme_enable_megamenu_cpt'   => 0,
+            'theme_smart_library_loading' => 1,
+            'theme_disable_theme_js_home' => 0,
+            'theme_disable_child_js_home' => 0,
+            'theme_disable_block_css_home' => 0,
+            'theme_disable_global_styles_home' => 0,
+            'theme_disable_dashicons_front' => 1,
+            'theme_disable_wp_embed_front' => 1,
             'theme_booking_auto_reply'    => 0,
             'theme_booking_auto_reply_subject' => 'We received your booking request',
             'theme_booking_auto_reply_message' => 'Thank you. We will reply soon.',
+            'theme_booking_delete_canceled' => 0,
+            'theme_booking_delete_old' => 0,
+            'theme_booking_delete_old_days' => 30,
+            'theme_dev_show_borders'      => 0,
+            'theme_dev_show_spacing'      => 0,
+            'theme_dev_show_typography'   => 0,
+            'theme_dev_show_colors'       => 0,
+            'theme_dev_pixel_perfect'     => 0,
+            'theme_dev_mockup_image'      => '',
+            'theme_dev_mockup_opacity'    => 35,
             'perf_cache_headers'          => 0,
             'perf_object_cache'           => 0,
             'perf_object_cache_driver'    => 'auto',
@@ -174,287 +196,6 @@ if (!function_exists('wp_theme_register_style_options_page')) {
 }
 add_action('acf/init', 'wp_theme_register_style_options_page', 5);
 
-
-if (!function_exists('wp_theme_non_core_post_type_objects')) {
-    function wp_theme_non_core_post_type_objects() {
-        $post_types = get_post_types(['public' => true], 'objects');
-        $exclude = [
-            'post',
-            'page',
-            'attachment',
-            'wp_block',
-            'wp_template',
-            'wp_template_part',
-            'wp_navigation',
-            'wp_font_family',
-            'wp_font_face',
-            'wp_global_styles',
-            'acf-field-group',
-            'acf-field',
-        ];
-
-        $items = [];
-        foreach ($post_types as $post_type => $object) {
-            if (in_array($post_type, $exclude, true) || !empty($object->_builtin)) {
-                continue;
-            }
-            $items[$post_type] = $object;
-        }
-
-        uasort($items, static function ($left, $right) {
-            return strcasecmp($left->labels->name ?? $left->name, $right->labels->name ?? $right->name);
-        });
-
-        return $items;
-    }
-}
-
-if (!function_exists('wp_theme_additional_cpt_rules')) {
-    function wp_theme_additional_cpt_rules() {
-        if (!function_exists('get_field')) {
-            return [];
-        }
-
-        $rows = get_field('theme_additional_cpt_rules', 'option');
-        $items = [];
-
-        if (is_array($rows)) {
-            foreach ($rows as $row) {
-                $slug = sanitize_key((string) ($row['slug'] ?? ''));
-                if ($slug === '' || in_array($slug, ['post', 'page', 'attachment'], true)) {
-                    continue;
-                }
-                $items[$slug] = [
-                    'slug' => $slug,
-                    'enabled' => !empty($row['enabled']),
-                ];
-            }
-        }
-
-        if (!empty($items)) {
-            return $items;
-        }
-
-        $raw = (string) get_field('theme_custom_cpt_slugs', 'option');
-        if ($raw === '') {
-            return [];
-        }
-
-        foreach (preg_split('/[\r\n,]+/', $raw) as $part) {
-            $slug = sanitize_key((string) $part);
-            if ($slug === '' || in_array($slug, ['post', 'page', 'attachment'], true)) {
-                continue;
-            }
-            $items[$slug] = [
-                'slug' => $slug,
-                'enabled' => false,
-            ];
-        }
-
-        return $items;
-    }
-}
-
-if (!function_exists('wp_theme_saved_cpt_slugs')) {
-    function wp_theme_saved_cpt_slugs() {
-        return array_values(array_keys(wp_theme_additional_cpt_rules()));
-    }
-}
-
-if (!function_exists('wp_theme_acf_json_post_type_objects')) {
-    function wp_theme_acf_json_post_type_objects() {
-        $items = [];
-        $dirs = array_unique(array_filter([
-            get_stylesheet_directory() . '/acf-json',
-            get_template_directory() . '/acf-json',
-        ]));
-
-        foreach ($dirs as $dir) {
-            foreach (glob(trailingslashit($dir) . 'post_type_*.json') ?: [] as $file) {
-                $payload = json_decode((string) file_get_contents($file), true);
-                if (!is_array($payload)) {
-                    continue;
-                }
-                $post_type = sanitize_key((string) ($payload['post_type'] ?? ''));
-                if ($post_type === '' || in_array($post_type, ['post', 'page', 'attachment'], true)) {
-                    continue;
-                }
-                $label = $payload['labels']['name'] ?? ($payload['title'] ?? ucwords(str_replace(['-', '_'], ' ', $post_type)));
-                $items[$post_type] = (object) [
-                    'name' => $post_type,
-                    'labels' => (object) ['name' => (string) $label],
-                    '_builtin' => false,
-                    '_acf_json' => true,
-                ];
-            }
-        }
-
-        uasort($items, static function ($left, $right) {
-            return strcasecmp($left->labels->name ?? $left->name, $right->labels->name ?? $right->name);
-        });
-
-        return $items;
-    }
-}
-
-if (!function_exists('wp_theme_known_cpt_objects')) {
-    function wp_theme_known_cpt_objects() {
-        $items = [
-            'booking' => (object) [
-                'name' => 'booking',
-                'labels' => (object) ['name' => 'Booking'],
-                '_builtin' => false,
-            ],
-        ];
-
-        foreach (wp_theme_acf_json_post_type_objects() as $post_type => $object) {
-            $items[$post_type] = $object;
-        }
-
-        foreach (wp_theme_non_core_post_type_objects() as $post_type => $object) {
-            $items[$post_type] = $object;
-        }
-
-        uasort($items, static function ($left, $right) {
-            return strcasecmp($left->labels->name ?? $left->name, $right->labels->name ?? $right->name);
-        });
-
-        return $items;
-    }
-}
-
-if (!function_exists('wp_theme_cpt_label_from_slug')) {
-    function wp_theme_cpt_label_from_slug($post_type) {
-        $post_type = sanitize_key((string) $post_type);
-        $object = post_type_exists($post_type) ? get_post_type_object($post_type) : null;
-        if ($object && !empty($object->labels->name)) {
-            return (string) $object->labels->name;
-        }
-
-        return ucwords(str_replace(['-', '_'], ' ', $post_type));
-    }
-}
-
-if (!function_exists('wp_theme_configurable_post_type_objects')) {
-    function wp_theme_configurable_post_type_objects() {
-        $items = wp_theme_known_cpt_objects();
-
-        foreach (wp_theme_saved_cpt_slugs() as $post_type) {
-            if (!isset($items[$post_type])) {
-                $items[$post_type] = (object) [
-                    'name' => $post_type,
-                    'labels' => (object) ['name' => wp_theme_cpt_label_from_slug($post_type)],
-                    '_builtin' => false,
-                ];
-            }
-        }
-
-        uasort($items, static function ($left, $right) {
-            return strcasecmp($left->labels->name ?? $left->name, $right->labels->name ?? $right->name);
-        });
-
-        return $items;
-    }
-}
-
-
-if (!function_exists('wp_theme_cpt_option_field_name')) {
-
-    function wp_theme_cpt_option_field_name($post_type) {
-        return 'theme_enable_cpt_' . sanitize_key(str_replace('-', '_', (string) $post_type));
-    }
-}
-
-if (!function_exists('wp_theme_is_cpt_enabled')) {
-    function wp_theme_is_cpt_enabled($post_type) {
-        $post_type = sanitize_key((string) $post_type);
-
-        if ($post_type === 'booking') {
-            return (bool) get_field('theme_enable_booking_cpt', 'option');
-        }
-
-        $object = post_type_exists($post_type) ? get_post_type_object($post_type) : null;
-        if ($object && (!empty($object->_builtin) || in_array($post_type, ['post', 'page', 'attachment'], true))) {
-            return true;
-        }
-
-        $additional = wp_theme_additional_cpt_rules();
-        if (isset($additional[$post_type])) {
-            return !empty($additional[$post_type]['enabled']);
-        }
-
-        $value = function_exists('get_field') ? get_field(wp_theme_cpt_option_field_name($post_type), 'option') : null;
-        return !empty($value);
-    }
-}
-
-if (!function_exists('wp_theme_dynamic_cpt_toggle_fields')) {
-    function wp_theme_dynamic_cpt_toggle_fields() {
-        $post_types = wp_theme_known_cpt_objects();
-        $fields = [];
-        $index = 0;
-        foreach ($post_types as $post_type => $object) {
-            $index++;
-            $label = $object->labels->name ?? ucfirst(str_replace(['-', '_'], ' ', $post_type));
-            $field_name = $post_type === 'booking' ? 'theme_enable_booking_cpt' : wp_theme_cpt_option_field_name($post_type);
-            $fields[] = [
-                'key' => 'field_theme_dynamic_cpt_' . sanitize_key($post_type) . '_' . $index,
-                'label' => $label,
-                'name' => $field_name,
-                'type' => 'true_false',
-                'ui' => 1,
-                'default_value' => 0,
-                'ui_on_text' => 'On',
-                'ui_off_text' => 'Off',
-                'wrapper' => ['width' => '25', 'class' => 'wp-theme-cpt-toggle'],
-            ];
-        }
-
-        return $fields;
-    }
-}
-
-if (!function_exists('wp_theme_cpt_shortcuts_markup')) {
-
-    function wp_theme_cpt_shortcuts_markup() {
-        $post_types = wp_theme_configurable_post_type_objects();
-        if (empty($post_types)) {
-            return '<p>No custom post types detected yet.</p>';
-        }
-
-        $buttons = [];
-        foreach ($post_types as $post_type => $object) {
-            $label = esc_html($object->labels->name ?? ucfirst(str_replace(['-', '_'], ' ', $post_type)));
-            $enabled = wp_theme_is_cpt_enabled($post_type);
-            if ($enabled && post_type_exists($post_type)) {
-                $archive_url = admin_url('edit.php?post_type=' . $post_type);
-                $new_url = admin_url('post-new.php?post_type=' . $post_type);
-                $buttons[] = '<a class="button button-secondary" href="' . esc_url($archive_url) . '">Manage ' . $label . '</a>';
-                $buttons[] = '<a class="button" href="' . esc_url($new_url) . '">Add ' . $label . '</a>';
-            } elseif ($enabled) {
-                $buttons[] = '<span class="button button-secondary disabled" aria-disabled="true">' . sprintf(esc_html__('Enabled, but %s is not registered yet', 'wp-theme'), $label) . '</span>';
-            } else {
-                $buttons[] = '<span class="button button-secondary disabled" aria-disabled="true">' . sprintf(esc_html__('Enable %s first', 'wp-theme'), $label) . '</span>';
-            }
-        }
-
-        return '<div class="wp-theme-helper-links"><p>' . implode(' ', $buttons) . '</p></div>';
-    }
-}
-
-add_filter('acf/load_value/name=theme_additional_cpt_rules', static function ($value, $post_id, $field) {
-    if ($post_id !== 'option' || !empty($value)) {
-        return $value;
-    }
-
-    return [
-        ['slug' => 'products', 'enabled' => 0],
-        ['slug' => 'case-study', 'enabled' => 0],
-        ['slug' => 'testimonial', 'enabled' => 0],
-        ['slug' => 'megamenu', 'enabled' => 0],
-    ];
-}, 10, 3);
-
 if (!function_exists('wp_theme_style_size_triplet_fields')) {
     function wp_theme_style_size_triplet_fields($slug_prefix, $label, $desktop, $tablet, $mobile) {
         $safe = sanitize_title($slug_prefix);
@@ -499,6 +240,127 @@ if (!function_exists('wp_theme_style_size_triplet_fields')) {
                 'prepend' => 'Mobile',
             ],
         ];
+    }
+}
+
+
+
+if (!function_exists('wp_theme_general_tools_markup')) {
+    function wp_theme_general_tools_markup() {
+        $home = home_url('/');
+        $slug = trim((string) wp_theme_acf_get('theme_custom_login_slug', 'option', 'tfa-admin'), '/');
+        if ($slug === '') {
+            $slug = 'tfa-admin';
+        }
+
+        $items = [
+            ['label' => 'Bookings', 'url' => admin_url('edit.php?post_type=theme_booking')],
+            ['label' => 'Events', 'url' => admin_url('edit.php?post_type=event')],
+            ['label' => 'Products', 'url' => admin_url('edit.php?post_type=products')],
+            ['label' => 'Case Studies', 'url' => admin_url('edit.php?post_type=case-study')],
+            ['label' => 'Testimonials', 'url' => admin_url('edit.php?post_type=testimonial')],
+            ['label' => 'Megamenu', 'url' => admin_url('themes.php?page=edit.php?post_type=megamenu')],
+            ['label' => 'Custom Login', 'url' => home_url('/' . $slug . '/')],
+            ['label' => 'Pages Order', 'url' => admin_url('edit.php?post_type=page')],
+            ['label' => 'Posts Order', 'url' => admin_url('edit.php')],
+            ['label' => 'Documentation', 'url' => admin_url('admin.php?page=wp-theme-docs')],
+        ];
+
+        $html = '<div class="wp-theme-general-tools">';
+        foreach ($items as $item) {
+            $html .= '<a class="button button-secondary" target="_blank" rel="noopener" href="' . esc_url($item['url']) . '">' . esc_html($item['label']) . '</a>';
+        }
+        $html .= '</div>';
+        $html .= '<p class="description">Compact on/off switches live above. Use these shortcuts after enabling the matching function. Current custom login URL: <code>' . esc_html(home_url('/' . $slug . '/')) . '</code></p>';
+        return $html;
+    }
+}
+
+
+if (!function_exists('wp_theme_docs_register_page')) {
+    function wp_theme_docs_register_page() {
+        add_submenu_page(
+            'wp-theme-settings',
+            __('Theme Documentation', 'wp-theme'),
+            __('Documentation', 'wp-theme'),
+            'edit_theme_options',
+            'wp-theme-docs',
+            'wp_theme_docs_render_page'
+        );
+    }
+}
+add_action('admin_menu', 'wp_theme_docs_register_page', 30);
+
+if (!function_exists('wp_theme_docs_markdown_to_html')) {
+    function wp_theme_docs_markdown_to_html($markdown) {
+        $lines = preg_split("/\r\n|\r|\n/", (string) $markdown);
+        $html = '';
+        $in_list = false;
+        foreach ($lines as $line) {
+            $trim = trim($line);
+            if ($trim === '') {
+                if ($in_list) {
+                    $html .= '</ul>';
+                    $in_list = false;
+                }
+                continue;
+            }
+            if (preg_match('/^###\s+(.*)$/', $trim, $m)) {
+                if ($in_list) { $html .= '</ul>'; $in_list = false; }
+                $html .= '<h3>' . esc_html($m[1]) . '</h3>';
+                continue;
+            }
+            if (preg_match('/^##\s+(.*)$/', $trim, $m)) {
+                if ($in_list) { $html .= '</ul>'; $in_list = false; }
+                $html .= '<h2>' . esc_html($m[1]) . '</h2>';
+                continue;
+            }
+            if (preg_match('/^#\s+(.*)$/', $trim, $m)) {
+                if ($in_list) { $html .= '</ul>'; $in_list = false; }
+                $html .= '<h1>' . esc_html($m[1]) . '</h1>';
+                continue;
+            }
+            if (preg_match('/^-\s+(.*)$/', $trim, $m)) {
+                if (!$in_list) {
+                    $html .= '<ul class="wp-theme-docs-list">';
+                    $in_list = true;
+                }
+                $html .= '<li>' . esc_html($m[1]) . '</li>';
+                continue;
+            }
+            if (preg_match('/^\d+\.\s+(.*)$/', $trim, $m)) {
+                if ($in_list) { $html .= '</ul>'; $in_list = false; }
+                $html .= '<p><strong>' . esc_html($m[1]) . '</strong></p>';
+                continue;
+            }
+            if ($in_list) {
+                $html .= '</ul>';
+                $in_list = false;
+            }
+            $html .= '<p>' . esc_html($trim) . '</p>';
+        }
+        if ($in_list) {
+            $html .= '</ul>';
+        }
+        return $html;
+    }
+}
+
+if (!function_exists('wp_theme_docs_render_page')) {
+    function wp_theme_docs_render_page() {
+        if (!current_user_can('edit_theme_options')) {
+            wp_die(esc_html__('You do not have permission to view this page.', 'wp-theme'));
+        }
+        $path = trailingslashit(get_template_directory()) . 'README.md';
+        $markdown = file_exists($path) ? file_get_contents($path) : '# Documentation\n\nREADME.md not found.';
+        echo '<div class="wrap wp-theme-docs">';
+        echo '<h1>' . esc_html__('Theme Documentation', 'wp-theme') . '</h1>';
+        echo '<p><a class="button button-secondary" href="' . esc_url(admin_url('admin.php?page=wp-theme-settings')) . '">' . esc_html__('Back to Theme Settings', 'wp-theme') . '</a></p>';
+        echo '<div class="notice notice-info inline"><p>' . esc_html__('This screen renders the README.md bundled with the parent theme.', 'wp-theme') . '</p></div>';
+        echo '<div class="wp-theme-docs-card" style="background:#fff;border:1px solid #dcdcde;border-radius:12px;padding:24px;max-width:1100px;line-height:1.6;">';
+        echo wp_kses_post(wp_theme_docs_markdown_to_html($markdown));
+        echo '</div>';
+        echo '</div>';
     }
 }
 
@@ -711,24 +573,39 @@ if (!function_exists('wp_theme_register_style_fields')) {
         
         
         $fields[] = ['key'=>'tab_theme_general','label'=>'General','type'=>'tab'];
-        $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>General theme settings stored on the ACF options page for use with get_field(\'field_name\', \'option\').</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
-        $fields[] = ['key'=>'field_media_glightbox','label'=>'Enable Lightbox','name'=>'media_glightbox','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_select2_js','label'=>'Enable Select2','name'=>'select2_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_alpine_js','label'=>'Enable Alpine JS','name'=>'alpine_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'34']];
-        $fields[] = ['key'=>'field_theme_additional_cpt_rules','label'=>'Additional CPT Controls','name'=>'theme_additional_cpt_rules','type'=>'repeater','layout'=>'table','button_label'=>'Add CPT rule','instructions'=>'Add a CPT slug and switch it on or off here. Use this for CPTs not registered yet or added later by plugins.','sub_fields'=>[['key'=>'field_theme_additional_cpt_slug','label'=>'CPT Slug','name'=>'slug','type'=>'text','instructions'=>'Example: products, case-study, testimonial, megamenu','wrapper'=>['width'=>'70']],['key'=>'field_theme_additional_cpt_enabled','label'=>'On / Off','name'=>'enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'30']]],'wrapper'=>['width'=>'100']];
-        $fields = array_merge($fields, wp_theme_dynamic_cpt_toggle_fields());
-        $fields[] = ['key' => 'field_theme_cpt_shortcuts', 'label' => '', 'name' => 'theme_cpt_shortcuts', 'type' => 'message', 'message' => wp_theme_cpt_shortcuts_markup(), 'esc_html' => 0, 'new_lines' => 'br', 'wrapper' => ['width' => '100']];
-        $fields[] = ['key' => 'field_theme_security_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Login &amp; Admin Access</strong><br><span>Optional hardening for wp-admin and the login URL. Leave off by default.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['width' => '100', 'class' => 'wp-theme-settings-intro']];
-        $fields[] = ['key'=>'field_theme_wp_admin_redirect_home','label'=>'Redirect /wp-admin to homepage for logged-out users','name'=>'theme_wp_admin_redirect_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'34']];
-        $fields[] = ['key'=>'field_theme_custom_login_enabled','label'=>'Enable custom login slug','name'=>'theme_custom_login_enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_custom_login_slug','label'=>'Custom login slug','name'=>'theme_custom_login_slug','type'=>'text','default_value'=>'login','instructions'=>'Example: sign-in or secure-login. When enabled, direct wp-login.php access redirects home.','conditional_logic'=>[[['field'=>'field_theme_custom_login_enabled','operator'=>'==','value'=>'1']]],'wrapper'=>['width'=>'33']];
-        $fields[] = ['key'=>'field_theme_custom_login_hint','label'=>'','name'=>'','type'=>'message','message'=>'<div class="wp-theme-login-url-preview"><button type="button" class="button button-secondary" id="wp-theme-copy-login-url">Copy login URL</button> <code id="wp-theme-custom-login-url-preview"></code></div>','esc_html'=>0,'conditional_logic'=>[[['field'=>'field_theme_custom_login_enabled','operator'=>'==','value'=>'1']]],'wrapper'=>['width'=>'100']];
-        $fields[] = ['key'=>'field_theme_login_logo_enabled','label'=>'Replace Admin Login Logo','name'=>'theme_login_logo_enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'25']];
-        $fields[] = ['key'=>'field_theme_login_logo','label'=>'Login Logo Image','name'=>'theme_login_logo','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','wrapper'=>['width'=>'45']];
-        $fields[] = ['key'=>'field_theme_login_logo_width','label'=>'Logo Width','name'=>'theme_login_logo_width','type'=>'text','default_value'=>'160','wrapper'=>['width'=>'15']];
-        $fields[] = ['key'=>'field_theme_login_logo_height','label'=>'Logo Height','name'=>'theme_login_logo_height','type'=>'text','default_value'=>'80','wrapper'=>['width'=>'15']];
+        $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>Compact conditional controls for CPTs, login tools, and theme features.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro wp-theme-general-intro']];
+        $fields[] = ['key' => 'msg_theme_general_tools', 'label' => '', 'name' => '', 'type' => 'message', 'message' => wp_theme_general_tools_markup(), 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-general-tools-wrap']];
+        $fields[] = ['key'=>'field_media_glightbox','label'=>'Enable Lightbox','name'=>'media_glightbox','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_select2_js','label'=>'Enable Select2','name'=>'select2_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_alpine_js','label'=>'Enable Alpine JS','name'=>'alpine_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_booking_cpt','label'=>'Booking','name'=>'theme_enable_booking_cpt','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_event_cpt','label'=>'Event','name'=>'theme_enable_event_cpt','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_products_cpt','label'=>'Products','name'=>'theme_enable_products_cpt','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_case_study_cpt','label'=>'Case Study','name'=>'theme_enable_case_study_cpt','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_testimonial_cpt','label'=>'Testimonial','name'=>'theme_enable_testimonial_cpt','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_megamenu_cpt','label'=>'Megamenu','name'=>'theme_enable_megamenu_cpt','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_drag_drop_ordering','label'=>'Drag & Drop Ordering','name'=>'theme_enable_drag_drop_ordering','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_msg_theme_cpt_hint','label'=>'','name'=>'','type'=>'message','message'=>'<span>Enable only the CPTs you want to use. Megamenu appears under Appearance when enabled. Enable Event to use event details and the single event template. Turn on Drag & Drop Ordering to reorder pages, posts, and public CPTs directly from the admin list table.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
+        $fields[] = ['key'=>'field_theme_login_logo_enabled','label'=>'Replace Admin Login Logo','name'=>'theme_login_logo_enabled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_login_logo','label'=>'Login Logo Image','name'=>'theme_login_logo','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','wrapper'=>['width'=>'32','class'=>'wp-theme-general-field']];
+        $fields[] = ['key'=>'field_theme_login_logo_width','label'=>'Logo Width','name'=>'theme_login_logo_width','type'=>'text','default_value'=>'160','wrapper'=>['width'=>'16','class'=>'wp-theme-general-field']];
+        $fields[] = ['key'=>'field_theme_login_logo_height','label'=>'Logo Height','name'=>'theme_login_logo_height','type'=>'text','default_value'=>'80','wrapper'=>['width'=>'16','class'=>'wp-theme-general-field']];
+        $fields[] = ['key'=>'field_theme_redirect_wp_admin_home','label'=>'Redirect /wp-admin to homepage','name'=>'theme_redirect_wp_admin_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_enable_custom_login_slug','label'=>'Enable custom wp-admin login slug','name'=>'theme_enable_custom_login_slug','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_custom_login_slug','label'=>'Custom login slug','name'=>'theme_custom_login_slug','type'=>'text','default_value'=>'tfa-admin','instructions'=>'Example: tfa-admin. Visit /your-slug/ to log in. Direct wp-login.php can redirect home when enabled.','wrapper'=>['width'=>'32','class'=>'wp-theme-general-field']];
+        $fields[] = ['key'=>'field_msg_theme_login_slug_hint','label'=>'','name'=>'','type'=>'message','message'=>'<span>Keep the custom login slug disabled until you confirm the slug. When enabled, use the custom slug URL instead of wp-login.php.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
 
-        
+        $fields[] = ['key'=>'field_msg_theme_asset_hint','label'=>'','name'=>'','type'=>'message','message'=>'<strong>SEO asset controls</strong><br><span>Keep everything off by default. Turn on only the frontend asset rules you really need for homepage and library optimisation.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
+        $fields[] = ['key'=>'field_theme_smart_library_loading','label'=>'Smart library loading','name'=>'theme_smart_library_loading','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_disable_theme_js_home','label'=>'Disable parent JS on homepage','name'=>'theme_disable_theme_js_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_disable_child_js_home','label'=>'Disable child JS on homepage','name'=>'theme_disable_child_js_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_disable_block_css_home','label'=>'Disable block CSS on homepage','name'=>'theme_disable_block_css_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_disable_global_styles_home','label'=>'Disable global styles on homepage','name'=>'theme_disable_global_styles_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_disable_dashicons_front','label'=>'Disable dashicons on frontend','name'=>'theme_disable_dashicons_front','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_disable_wp_embed_front','label'=>'Disable wp-embed','name'=>'theme_disable_wp_embed_front','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_msg_theme_asset_hint_2','label'=>'','name'=>'','type'=>'message','message'=>'<span>Smart library loading keeps Alpine and Lightbox off pages that do not appear to use them. Homepage switches only affect the front page.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
+
+
         $fields[] = ['key'=>'tab_theme_acf_hero','label'=>'Custom Heros','type'=>'tab'];
 $fields[] = ['key' => 'msg_theme_hero_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Custom Heros ( Archive &amp; uneditable pages )</strong><br><span>ID shortcode: [custom_hero_shop] = shop</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
 $fields[] = [
@@ -830,31 +707,31 @@ $fields[] = [
 $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_layout_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Spacing & Containers</strong>', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
-            ['key'=>'field_theme_container_width','label'=>'Container Width','name'=>'theme_container_width','type'=>'text','default_value'=>'1200px','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_content_width','label'=>'Content Width','name'=>'theme_content_width','type'=>'text','default_value'=>'840px','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_wide_width','label'=>'Wide Width','name'=>'theme_wide_width','type'=>'text','default_value'=>'1280px','wrapper'=>['width'=>'34']],
-            ['key'=>'field_theme_gutter_width','label'=>'Gutter','name'=>'theme_gutter_width','type'=>'text','default_value'=>'1.5rem','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_section_spacing','label'=>'Section Spacing','name'=>'theme_section_spacing','type'=>'text','default_value'=>'clamp(2rem, 4vw, 5rem)','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_radius','label'=>'Radius','name'=>'theme_radius','type'=>'text','default_value'=>'18px','wrapper'=>['width'=>'34']],
+            ['key'=>'field_theme_container_width','label'=>'Container Width','name'=>'theme_container_width','type'=>'text','default_value'=>'1200px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_content_width','label'=>'Content Width','name'=>'theme_content_width','type'=>'text','default_value'=>'840px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_wide_width','label'=>'Wide Width','name'=>'theme_wide_width','type'=>'text','default_value'=>'1280px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_gutter_width','label'=>'Gutter','name'=>'theme_gutter_width','type'=>'text','default_value'=>'1.5rem','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_section_spacing','label'=>'Section Spacing','name'=>'theme_section_spacing','type'=>'text','default_value'=>'clamp(2rem, 4vw, 5rem)','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_radius','label'=>'Radius','name'=>'theme_radius','type'=>'text','default_value'=>'18px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
         ]);
 
         $fields[] = ['key'=>'tab_theme_typography','label'=>'Typography','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_typography_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Typography</strong><br><span>Font providers, import URLs, repeatable font variables, weight variables, and all responsive font sizes live here.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
-            ['key'=>'field_theme_font_provider','label'=>'Font Provider','name'=>'theme_font_provider','type'=>'select','choices'=>['system'=>'System / local only','google'=>'Google Fonts','custom'=>'Custom import URL(s)'],'default_value'=>'system','wrapper'=>['width'=>'33']],
+            ['key'=>'field_theme_font_provider','label'=>'Font Provider','name'=>'theme_font_provider','type'=>'select','choices'=>['system'=>'System / local only','google'=>'Google Fonts','custom'=>'Custom import URL(s)'],'default_value'=>'system','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_google_font_browse','label'=>'','name'=>'','type'=>'message','message'=>wp_theme_google_font_browse_markup(),'esc_html'=>0,'wrapper'=>['width'=>'67','class'=>'wp-theme-settings-intro wp-theme-font-browse']],
-            ['key'=>'field_theme_body_font','label'=>'Body Font Stack','name'=>'theme_body_font','type'=>'text','default_value'=>"'Albert Sans', sans-serif",'wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_heading_font','label'=>'Heading Font Stack','name'=>'theme_heading_font','type'=>'text','default_value'=>"'Albert Sans', sans-serif",'wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_ui_font','label'=>'UI Font Stack','name'=>'theme_ui_font','type'=>'text','default_value'=>"'Albert Sans', sans-serif",'wrapper'=>['width'=>'34']],
-            ['key'=>'field_theme_google_body_family','label'=>'Google Body Family','name'=>'theme_google_body_family','type'=>'text','default_value'=>'Albert Sans','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_google_heading_family','label'=>'Google Heading Family','name'=>'theme_google_heading_family','type'=>'text','default_value'=>'Albert Sans','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_google_ui_family','label'=>'Google UI Family','name'=>'theme_google_ui_family','type'=>'text','default_value'=>'Albert Sans','wrapper'=>['width'=>'34']],
-            ['key'=>'field_theme_google_body_weights','label'=>'Body Weights','name'=>'theme_google_body_weights','type'=>'text','default_value'=>'300;400;500;600;700','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_google_heading_weights','label'=>'Heading Weights','name'=>'theme_google_heading_weights','type'=>'text','default_value'=>'400;500;600;700;800','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_google_ui_weights','label'=>'UI Weights','name'=>'theme_google_ui_weights','type'=>'text','default_value'=>'400;500;600;700','wrapper'=>['width'=>'34']],
-            ['key'=>'field_theme_custom_font_import_url_1','label'=>'Custom Font CSS URL 1','name'=>'theme_custom_font_import_url_1','type'=>'url','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_custom_font_import_url_2','label'=>'Custom Font CSS URL 2','name'=>'theme_custom_font_import_url_2','type'=>'url','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_custom_font_import_url_3','label'=>'Custom Font CSS URL 3','name'=>'theme_custom_font_import_url_3','type'=>'url','wrapper'=>['width'=>'34']],
+            ['key'=>'field_theme_body_font','label'=>'Body Font Stack','name'=>'theme_body_font','type'=>'text','default_value'=>"'Albert Sans', sans-serif",'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_heading_font','label'=>'Heading Font Stack','name'=>'theme_heading_font','type'=>'text','default_value'=>"'Albert Sans', sans-serif",'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_ui_font','label'=>'UI Font Stack','name'=>'theme_ui_font','type'=>'text','default_value'=>"'Albert Sans', sans-serif",'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_google_body_family','label'=>'Google Body Family','name'=>'theme_google_body_family','type'=>'text','default_value'=>'Albert Sans','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_google_heading_family','label'=>'Google Heading Family','name'=>'theme_google_heading_family','type'=>'text','default_value'=>'Albert Sans','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_google_ui_family','label'=>'Google UI Family','name'=>'theme_google_ui_family','type'=>'text','default_value'=>'Albert Sans','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_google_body_weights','label'=>'Body Weights','name'=>'theme_google_body_weights','type'=>'text','default_value'=>'300;400;500;600;700','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_google_heading_weights','label'=>'Heading Weights','name'=>'theme_google_heading_weights','type'=>'text','default_value'=>'400;500;600;700;800','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_google_ui_weights','label'=>'UI Weights','name'=>'theme_google_ui_weights','type'=>'text','default_value'=>'400;500;600;700','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_custom_font_import_url_1','label'=>'Custom Font CSS URL 1','name'=>'theme_custom_font_import_url_1','type'=>'url','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_custom_font_import_url_2','label'=>'Custom Font CSS URL 2','name'=>'theme_custom_font_import_url_2','type'=>'url','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_custom_font_import_url_3','label'=>'Custom Font CSS URL 3','name'=>'theme_custom_font_import_url_3','type'=>'url','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_body_weight','label'=>'Body Weight','name'=>'theme_body_weight','type'=>'text','default_value'=>'400','wrapper'=>['width'=>'16']],
             ['key'=>'field_theme_body_weight_medium','label'=>'Body Medium','name'=>'theme_body_weight_medium','type'=>'text','default_value'=>'500','wrapper'=>['width'=>'16']],
             ['key'=>'field_theme_heading_weight','label'=>'Heading Weight','name'=>'theme_heading_weight','type'=>'text','default_value'=>'700','wrapper'=>['width'=>'17']],
@@ -891,24 +768,24 @@ $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
         $fields[] = ['key'=>'tab_theme_animations','label'=>'Animations','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_animations_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Animation controls</strong><br><span>Full animation UI with preview, library search, integration examples, plus optional Lottie and SVG motion support.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
-            ['key'=>'field_theme_anim_enabled','label'=>'Enable Animations','name'=>'theme_anim_enabled','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_anim_disable_mobile','label'=>'Disable on Mobile','name'=>'theme_anim_disable_mobile','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_anim_reduce_motion','label'=>'Respect Reduced Motion','name'=>'theme_anim_reduce_motion','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_anim_repeat','label'=>'Repeat Count','name'=>'theme_anim_repeat','type'=>'select','choices'=>['1'=>'1','2'=>'2','3'=>'3','infinite'=>'infinite'],'default_value'=>'1','wrapper'=>['width'=>'25']],
+            ['key'=>'field_theme_anim_enabled','label'=>'Enable Animations','name'=>'theme_anim_enabled','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_anim_disable_mobile','label'=>'Disable on Mobile','name'=>'theme_anim_disable_mobile','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_anim_reduce_motion','label'=>'Respect Reduced Motion','name'=>'theme_anim_reduce_motion','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_anim_repeat','label'=>'Repeat Count','name'=>'theme_anim_repeat','type'=>'select','choices'=>['1'=>'1','2'=>'2','3'=>'3','infinite'=>'infinite'],'default_value'=>'1','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_anim_default_class','label'=>'Default Animation','name'=>'theme_anim_default_class','type'=>'select','choices'=>$animation_choices,'ui'=>1,'allow_null'=>1,'default_value'=>'animate__fadeInUp','wrapper'=>['width'=>'50']],
             ['key'=>'field_theme_anim_custom_class','label'=>'Extra Class','name'=>'theme_anim_custom_class','type'=>'text','default_value'=>'','wrapper'=>['width'=>'50']],
-            ['key'=>'field_theme_anim_duration','label'=>'Duration','name'=>'theme_anim_duration','type'=>'text','default_value'=>'1s','placeholder'=>'1s or 800ms','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_anim_delay','label'=>'Delay','name'=>'theme_anim_delay','type'=>'text','default_value'=>'0s','placeholder'=>'0s or 150ms','wrapper'=>['width'=>'33']],
-            ['key'=>'field_theme_anim_preview_text','label'=>'Preview Text','name'=>'theme_anim_preview_text','type'=>'text','default_value'=>'Animation preview','wrapper'=>['width'=>'34']],
-            ['key'=>'field_theme_motion_enable_lottie','label'=>'Enable Lottie Support','name'=>'theme_motion_enable_lottie','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'20']],
+            ['key'=>'field_theme_anim_duration','label'=>'Duration','name'=>'theme_anim_duration','type'=>'text','default_value'=>'1s','placeholder'=>'1s or 800ms','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_anim_delay','label'=>'Delay','name'=>'theme_anim_delay','type'=>'text','default_value'=>'0s','placeholder'=>'0s or 150ms','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_anim_preview_text','label'=>'Preview Text','name'=>'theme_anim_preview_text','type'=>'text','default_value'=>'Animation preview','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_motion_enable_lottie','label'=>'Enable Lottie Support','name'=>'theme_motion_enable_lottie','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_motion_lottie_url','label'=>'Default Lottie URL','name'=>'theme_motion_lottie_url','type'=>'url','wrapper'=>['width'=>'40']],
             ['key'=>'field_theme_motion_lottie_speed','label'=>'Lottie Speed','name'=>'theme_motion_lottie_speed','type'=>'text','default_value'=>'1','wrapper'=>['width'=>'10']],
             ['key'=>'field_theme_motion_lottie_loop','label'=>'Loop','name'=>'theme_motion_lottie_loop','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'10']],
             ['key'=>'field_theme_motion_lottie_autoplay','label'=>'Autoplay','name'=>'theme_motion_lottie_autoplay','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'10']],
-            ['key'=>'field_theme_motion_lottie_width','label'=>'Lottie Width','name'=>'theme_motion_lottie_width','type'=>'text','default_value'=>'240px','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_motion_lottie_height','label'=>'Lottie Height','name'=>'theme_motion_lottie_height','type'=>'text','default_value'=>'240px','wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_motion_enable_svg_motion','label'=>'Enable SVG Motion Helpers','name'=>'theme_motion_enable_svg_motion','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_theme_motion_svg_class','label'=>'SVG Motion Class','name'=>'theme_motion_svg_class','type'=>'text','default_value'=>'is-animated-svg','wrapper'=>['width'=>'25']],
+            ['key'=>'field_theme_motion_lottie_width','label'=>'Lottie Width','name'=>'theme_motion_lottie_width','type'=>'text','default_value'=>'240px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_motion_lottie_height','label'=>'Lottie Height','name'=>'theme_motion_lottie_height','type'=>'text','default_value'=>'240px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_motion_enable_svg_motion','label'=>'Enable SVG Motion Helpers','name'=>'theme_motion_enable_svg_motion','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_motion_svg_class','label'=>'SVG Motion Class','name'=>'theme_motion_svg_class','type'=>'text','default_value'=>'is-animated-svg','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key' => 'msg_theme_animation_full_ui', 'label' => '', 'name' => '', 'type' => 'message', 'message' => wp_theme_animation_settings_markup(), 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-animation-ui-wrap']],
         ]);
 
@@ -932,24 +809,39 @@ $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
         $fields[] = ['key'=>'tab_theme_performance','label'=>'Performance Extras','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_performance_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Cache, critical CSS & search</strong><br><span>Optional performance tools and cache controls.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
-            ['key'=>'field_wp_theme_cache_headers','label'=>'Cache Headers','name'=>'perf_cache_headers','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_object_cache','label'=>'Object Cache','name'=>'perf_object_cache','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_object_cache_driver','label'=>'Object Cache Driver','name'=>'perf_object_cache_driver','type'=>'select','choices'=>['auto'=>'Auto','redis'=>'Redis','memcached'=>'Memcached','transient'=>'Transient','disabled'=>'Disabled'],'default_value'=>'auto','wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_object_cache_ttl','label'=>'Object Cache TTL','name'=>'perf_object_cache_ttl','type'=>'number','default_value'=>600,'min'=>60,'step'=>60,'append'=>'sec','wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_html_minify','label'=>'HTML Minify (safe)','name'=>'perf_html_minify','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_critical_css','label'=>'Auto Critical CSS','name'=>'perf_auto_critical_css','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_search_thumbs','label'=>'Search Thumbnails','name'=>'perf_search_thumbnails','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_search_enhanced','label'=>'Enhanced Ajax Search','name'=>'perf_search_enhanced','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'25']],
-            ['key'=>'field_wp_theme_perf_actions','label'=>'Tools','name'=>'perf_tools_markup','type'=>'message','message'=>wp_theme_performance_actions_markup(),'esc_html'=>0,'wrapper'=>['width'=>'100']],
+            ['key'=>'field_wp_theme_cache_headers','label'=>'Cache Headers','name'=>'perf_cache_headers','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_object_cache','label'=>'Object Cache','name'=>'perf_object_cache','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_object_cache_driver','label'=>'Object Cache Driver','name'=>'perf_object_cache_driver','type'=>'select','choices'=>['auto'=>'Auto','redis'=>'Redis','memcached'=>'Memcached','transient'=>'Transient','disabled'=>'Disabled'],'default_value'=>'auto','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_object_cache_ttl','label'=>'Object Cache TTL','name'=>'perf_object_cache_ttl','type'=>'number','default_value'=>600,'min'=>60,'step'=>60,'append'=>'sec','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_html_minify','label'=>'HTML Minify (safe)','name'=>'perf_html_minify','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_critical_css','label'=>'Auto Critical CSS','name'=>'perf_auto_critical_css','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_search_thumbs','label'=>'Search Thumbnails','name'=>'perf_search_thumbnails','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_search_enhanced','label'=>'Enhanced Ajax Search','name'=>'perf_search_enhanced','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_wp_theme_perf_actions','label'=>'Tools','name'=>'perf_tools_markup','type'=>'message','message'=>wp_theme_performance_actions_markup(),'esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']],
         ]);
+
+        $fields[] = ['key'=>'tab_theme_developer_tools','label'=>'Developer Tools','type'=>'tab'];
+        $fields[] = ['key' => 'msg_theme_dev_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Developer tools</strong><br><span>Optional frontend QA helpers for borders, spacing, typography, colors, and pixel-perfect overlay. Keep everything off unless you are actively checking a page.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
+        $fields[] = ['key'=>'field_theme_dev_show_borders','label'=>'Show Borders','name'=>'theme_dev_show_borders','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_dev_show_spacing','label'=>'Show Margins & Paddings','name'=>'theme_dev_show_spacing','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_dev_show_typography','label'=>'Typography Inspector','name'=>'theme_dev_show_typography','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_dev_show_colors','label'=>'Color Codes','name'=>'theme_dev_show_colors','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_dev_pixel_perfect','label'=>'Pixel Perfect Overlay','name'=>'theme_dev_pixel_perfect','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
+        $fields[] = ['key'=>'field_theme_dev_mockup_image','label'=>'Mockup Image','name'=>'theme_dev_mockup_image','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','wrapper'=>['width'=>'32','class'=>'wp-theme-general-field']];
+        $fields[] = ['key'=>'field_theme_dev_mockup_opacity','label'=>'Mockup Opacity','name'=>'theme_dev_mockup_opacity','type'=>'range','default_value'=>35,'min'=>5,'max'=>100,'step'=>5,'append'=>'%','wrapper'=>['width'=>'16','class'=>'wp-theme-general-field']];
+        $fields[] = ['key'=>'field_theme_dev_note','label'=>'','name'=>'','type'=>'message','message'=>'<span>Developer tools load only for logged-in users who can edit theme options. Use Alt + click on the frontend to inspect typography, spacing, and color values.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
 
         $fields[] = ['key'=>'tab_theme_booking_dashboard','label'=>'Booking Dashboard','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_booking_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Bookings</strong><br><span>Calendar, client table, and reply tools.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
-            ['key'=>'field_theme_booking_auto_reply','label'=>'Auto Reply Client','name'=>'theme_booking_auto_reply','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'20']],
-            ['key'=>'field_theme_booking_auto_reply_subject','label'=>'Auto Reply Subject','name'=>'theme_booking_auto_reply_subject','type'=>'text','default_value'=>'We received your booking request','wrapper'=>['width'=>'40']],
-            ['key'=>'field_theme_booking_auto_reply_message','label'=>'Auto Reply Message','name'=>'theme_booking_auto_reply_message','type'=>'textarea','rows'=>3,'default_value'=>'Thank you. We will reply soon.','wrapper'=>['width'=>'40']],
-            ['key'=>'field_theme_booking_dashboard_markup','label'=>'','name'=>'','type'=>'message','message'=>function_exists('wp_theme_booking_dashboard_markup') ? wp_theme_booking_dashboard_markup() : '', 'esc_html'=>0,'wrapper'=>['width'=>'100']],
+            ['key'=>'field_theme_booking_auto_reply','label'=>'Auto Reply Client','name'=>'theme_booking_auto_reply','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_booking_delete_canceled','label'=>'Delete Canceled','name'=>'theme_booking_delete_canceled','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_booking_delete_old','label'=>'Delete Old Bookings','name'=>'theme_booking_delete_old','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_booking_delete_old_days','label'=>'Old After (days)','name'=>'theme_booking_delete_old_days','type'=>'number','default_value'=>30,'min'=>1,'step'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_booking_auto_reply_subject','label'=>'Auto Reply Subject','name'=>'theme_booking_auto_reply_subject','type'=>'text','default_value'=>'We received your booking request','wrapper'=>['width'=>'32']],
+            ['key'=>'field_theme_booking_auto_reply_message','label'=>'Auto Reply Message','name'=>'theme_booking_auto_reply_message','type'=>'textarea','rows'=>3,'default_value'=>'Thank you. We will reply soon.','wrapper'=>['width'=>'32']],
+            ['key'=>'field_theme_booking_cleanup_tools','label'=>'','name'=>'','type'=>'message','message'=>function_exists('wp_theme_booking_cleanup_tools_markup') ? wp_theme_booking_cleanup_tools_markup() : '', 'esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']],
+            ['key'=>'field_theme_booking_dashboard_markup','label'=>'','name'=>'','type'=>'message','message'=>function_exists('wp_theme_booking_dashboard_markup') ? wp_theme_booking_dashboard_markup() : '', 'esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']],
         ]);
 
         acf_add_local_field_group([
@@ -1510,20 +1402,7 @@ if (!function_exists('wp_theme_enqueue_admin_assets')) {
                     'defaultPreviewText' => __('Animation preview', 'wp-theme'),
                     'demoImportText' => __('Importing demo homepage…', 'wp-theme'),
                     'demoImportedText' => __('Demo homepage imported and set as front page.', 'wp-theme'),
-                    'manageLabel' => __('Manage', 'wp-theme'),
-                    'addLabel' => __('Add', 'wp-theme'),
-                    'enableFirstLabel' => __('Turn %s on first', 'wp-theme'),
-                    'pendingLabel' => __('On, but %s is not registered yet', 'wp-theme'),
-                    'addCptRow' => __('Add CPT row', 'wp-theme'),
-                    'generateAcfCpts' => __('Generate ACF CPT rows', 'wp-theme'),
-                    'generateDetectedCpts' => __('Generate detected CPT rows', 'wp-theme'),
-                    'refreshButtons' => __('Refresh buttons', 'wp-theme'),
-                    'copyLoginUrl' => __('Copy login URL', 'wp-theme'),
-                    'copiedLoginUrl' => __('Copied login URL', 'wp-theme'),
                 ],
-                'acfCpts' => array_values(array_keys(wp_theme_acf_json_post_type_objects())),
-                'detectedCpts' => array_values(array_keys(wp_theme_non_core_post_type_objects())),
-                'customLoginUrl' => home_url('/' . trim((string) wp_theme_acf_get('theme_custom_login_slug', 'option', 'login'), '/') . '/'),
             ]);
         }
     }
@@ -1622,10 +1501,10 @@ if (!function_exists('wp_theme_demo_import_markup')) {
         <div class="wp-theme-demo-import-ui">
             <div class="wp-theme-demo-import-card">
                 <h3><?php esc_html_e('Import & run first demo', 'wp-theme'); ?></h3>
-                <p><?php esc_html_e('Creates or updates a cleaner Demo Homepage, sets it as the front page, and uses WP BBuilder plugin blocks with a simpler 12-column-first layout.', 'wp-theme'); ?></p>
+                <p><?php esc_html_e('Creates or updates a Demo Homepage page, sets it as the front page, and uses WP BBuilder plugin blocks where available.', 'wp-theme'); ?></p>
                 <div class="wp-theme-demo-import-grid">
-                    <div><strong><?php esc_html_e('Included sections', 'wp-theme'); ?></strong><div><?php esc_html_e('Hero, value props, services, case studies, testimonials, pricing, FAQ, blog, CTA, plus matching About and Contact demo pages.', 'wp-theme'); ?></div></div>
-                    <div><strong><?php esc_html_e('Block usage', 'wp-theme'); ?></strong><div><?php esc_html_e('Uses WP BBuilder rows, columns, buttons, testimonials, price cards, accordion, blog filter, dynamic form, and Google Map blocks.', 'wp-theme'); ?></div></div>
+                    <div><strong><?php esc_html_e('Included sections', 'wp-theme'); ?></strong><div><?php esc_html_e('Header, Hero, Logos, Features, How It Works, Products/Services, Testimonials, Pricing, FAQ, Blog, CTA, Footer.', 'wp-theme'); ?></div></div>
+                    <div><strong><?php esc_html_e('Block usage', 'wp-theme'); ?></strong><div><?php esc_html_e('Uses WP BBuilder rows, columns, buttons, accordion, CTA section, and blog filter blocks.', 'wp-theme'); ?></div></div>
                 </div>
                 <p>
                     <button type="button" class="button button-primary button-hero" id="wp-theme-import-demo-homepage"><?php esc_html_e('Import & Run First Demo', 'wp-theme'); ?></button>
@@ -1642,61 +1521,64 @@ if (!function_exists('wp_theme_demo_import_markup')) {
 if (!function_exists('wp_theme_demo_homepage_content')) {
     function wp_theme_demo_homepage_content() {
         return <<<'HTML'
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 align-items-center wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} -->
-<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Demo 01 · service business</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Launch a sharper service website with simpler sections and cleaner conversions.</h1><!-- /wp:heading -->
-<!-- wp:paragraph {"className":"wp-theme-demo-copy"} --><p class="wp-theme-demo-copy">This first demo keeps the structure straightforward: full-width 12-column content where possible, stronger section hierarchy, and reusable WP BBuilder blocks for real client builds.</p><!-- /wp:paragraph -->
-<!-- wp:wpbb/button {"text":"Book a discovery call","url":"#contact","btnClass":"btn btn-primary px-4 py-2 me-2"} /-->
-<!-- wp:wpbb/button {"text":"Explore pricing","url":"#pricing","btnClass":"btn btn-outline-dark px-4 py-2"} /-->
-<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1440x760/e2e8f0/0f172a?text=Demo+Hero+Preview" alt="Demo homepage preview" width="1440" height="760"/></figure><!-- /wp:image -->
-<!-- wp:html --><div class="row g-3 mt-2"><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>24h</strong><br/>proposal turnaround</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>48+</strong><br/>repeat clients</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>4.9/5</strong><br/>average satisfaction</div></div></div><!-- /wp:html -->
+<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-center wp-theme-demo-homepage"} -->
+<!-- wp:wpbb/column {"xs":12,"md":7} -->
+<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Standard Business / SaaS</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Build a cleaner SaaS website with WP BBuilder-powered sections.</h1><!-- /wp:heading -->
+<!-- wp:paragraph {"className":"wp-theme-demo-copy"} --><p class="wp-theme-demo-copy">A polished starter demo with hero, trust logos, features, pricing, FAQ, blog, and CTA — ready to customize with Bootstrap-friendly blocks.</p><!-- /wp:paragraph -->
+<!-- wp:wpbb/button {"text":"Start Free Trial","url":"#pricing","btnClass":"btn btn-primary px-4 py-2 me-2"} /-->
+<!-- wp:wpbb/button {"text":"See Pricing","url":"#pricing","btnClass":"btn btn-outline-dark px-4 py-2"} /-->
+<!-- wp:html --><div class="row g-3 mt-4"><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>12k+</strong><br/>active users</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>42%</strong><br/>faster onboarding</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>99.9%</strong><br/>uptime target</div></div></div><!-- /wp:html -->
+<!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":5} -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/960x680/e2e8f0/0f172a?text=SaaS+Dashboard" alt="Dashboard preview"/></figure><!-- /wp:image -->
 <!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Why clients choose us</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">A flexible starter layout for agencies, consultants and productized services.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Clear structure</h4><p>Most sections stay in a simple 12-column flow, making edits faster for content teams.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Reusable blocks</h4><p>Swap in builder blocks, Gutenberg content, or custom CPT-driven sections without rebuilding the page.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Better conversion flow</h4><p>Services, proof, pricing and contact prompts appear in a more natural sales order.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container pb-5 wp-theme-demo-homepage text-center"} -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+1" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+2" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+3" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+4" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+5" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":6,"md":2} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none"} --><figure class="wp-block-image size-medium"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+6" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
 <!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/cards --><!-- wp:wpbb/cta-card {"title":"Strategy","text":"Workshops, audits and planning sessions to align teams before design or build.","buttonText":"Learn more","buttonUrl":"#"} /--><!-- wp:wpbb/cta-card {"title":"Build","text":"Flexible page building, reusable content patterns and conversion-focused section design.","buttonText":"See services","buttonUrl":"#"} /--><!-- wp:wpbb/cta-card {"title":"Growth","text":"Ongoing optimisation, content refreshes and campaign landing pages after launch.","buttonText":"Get support","buttonUrl":"#"} /--><!-- /wp:wpbb/cards --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Features</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Everything you need to launch a modern business site.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Reusable blocks</h4><p>Mix Gutenberg content with structured builder blocks for faster editing.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Bootstrap layout</h4><p>Rows, columns, utilities, and spacing stay consistent across the site.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Conversion flow</h4><p>Pricing, FAQ, testimonials, blog, and CTA sections work together.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
 <!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Selected work</p><!-- /wp:paragraph --><!-- wp:wpbb/timeline {"title":"Project flow","layout":"vertical","itemsJson":"[{"date":"Brief","title":"Discovery","text":"We capture goals, audiences and offers before layout decisions."},{"date":"Design","title":"Prototype","text":"Sections are assembled with reusable blocks and refined quickly."},{"date":"Launch","title":"Optimise","text":"The site goes live with a structure ready for future campaigns."}]"} /--><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Testimonials</p><!-- /wp:paragraph --><!-- wp:wpbb/testimonials {"title":"What clients say","itemsJson":"[{"quote":"The new structure made content editing much easier for our internal team.","name":"A. Client","role":"Marketing Lead"},{"quote":"We launched faster and finally had a homepage that reflected the real offer.","name":"B. Client","role":"Founder"},{"quote":"The builder blocks gave us enough flexibility without making the editor messy.","name":"C. Client","role":"Operations Manager"}]"} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":4} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">How It Works</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Go from idea to launch in three steps.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12,"md":8} --><!-- wp:wpbb/timeline {"title":"Timeline","layout":"vertical","itemsJson":"[{"date":"Step 1","title":"Setup","text":"Install blocks, choose styles, and import the demo."},{"date":"Step 2","title":"Customize","text":"Replace content, logos, pricing, and brand visuals."},{"date":"Step 3","title":"Publish","text":"Set the page live and refine each section over time."}]"} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
 <!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"pricing"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/pricecards {"title":"Pricing","currency":"£","styleVariant":"default","cardsJson":"[{"title":"Starter","price":"950","period":"from","text":"Single landing page or campaign page with contact flow.","button":"Choose starter","featured":false},{"title":"Growth","price":"2400","period":"from","text":"Multi-section business site with reusable templates and content support.","button":"Choose growth","featured":true},{"title":"Custom","price":"Talk to us","period":"","text":"Complex builds, migrations, integrations or CPT-driven websites.","button":"Request quote","featured":false}]"} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/pricecards {"title":"Pricing","currency":"£","styleVariant":"default","cardsJson":"[{"title":"Starter","price":"29","period":"/mo","text":"Core pages, forms, and analytics.","button":"Choose plan","featured":false},{"title":"Growth","price":"99","period":"/mo","text":"Automation, CRM, and advanced reporting.","button":"Choose plan","featured":true},{"title":"Scale","price":"Custom","period":"","text":"Bespoke onboarding, support, and optimization.","button":"Contact sales","featured":false}]","showFeatured":true} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
 <!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">FAQ</p><!-- /wp:paragraph --><!-- wp:wpbb/accordion {"flush":false} --><!-- wp:wpbb/accordion-item {"title":"Can this demo be used as a real first homepage?"} --><p>Yes. It is designed as a practical starting point, not just a visual placeholder.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Does it support custom post types?"} --><p>Yes. Theme Settings → General lets you turn detected CPTs on or off and add extra CPT controls without leaving the page.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Can the menu handle megamenu and mobile states better?"} --><p>Yes. Megamenu panels are rendered outside the anchor and below XL the mobile menu stays active.</p><!-- /wp:wpbb/accordion-item --><!-- /wp:wpbb/accordion --><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">FAQ</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Frequently asked questions</h2><!-- /wp:heading --><!-- wp:wpbb/accordion {"flush":false} --><!-- wp:wpbb/accordion-item {"title":"Can I use this as my first live homepage?"} --><p>Yes. Import it, replace the placeholder copy, and set the page as your front page.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Does this use WP BBuilder blocks?"} --><p>Yes. The demo uses WP BBuilder rows, columns, buttons, accordion, CTA section, blog filter, and dynamic form blocks where available.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Can I swap sections out later?"} --><p>Absolutely. Each section is modular and can be edited or replaced independently.</p><!-- /wp:wpbb/accordion-item --><!-- /wp:wpbb/accordion --><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
 <!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/blog-filter {"title":"Latest posts","postsToShow":3,"buttonText":"Filter"} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/blog-filter {"title":"Latest Posts","postsToShow":3,"buttonText":"Filter"} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"contact"} -->
-<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/cta-section {"title":"Ready to turn the demo into your live site?","text":"Import the structure, swap the content, connect your menus and custom post types, and publish faster.","buttonText":"Start your project","buttonUrl":"/contact"} /--><!-- /wp:wpbb/column -->
+<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"cta"} -->
+<!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/cta-section {"title":"Ready to launch your new homepage?","text":"Import the layout, replace the content, and start publishing with a cleaner workflow.","buttonText":"Request Demo","buttonUrl":"#"} /--><!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 HTML;
     }
 }
 
 if (!function_exists('wp_theme_demo_blog_post_content')) {
-
     function wp_theme_demo_blog_post_content($index = 1) {
         return '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus commodo, libero sit amet feugiat posuere, mauris arcu sodales turpis, sed bibendum enim nisl vel justo.</p><!-- /wp:paragraph -->'
-            . '<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1200x700/e2e8f0/0f172a?text=Demo+Post+' . intval($index) . '" alt="Demo post" width="1200" height="700"/></figure><!-- /wp:image -->'
+            . '<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1200x700/e2e8f0/0f172a?text=Demo+Post+' . intval($index) . '" alt="Demo post"/></figure><!-- /wp:image -->'
             . '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Section heading</h3><!-- /wp:heading -->'
             . '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec at arcu non risus laoreet iaculis. Integer ut augue nisl. Integer interdum sem quis arcu porta, et feugiat dui finibus.</p><!-- /wp:paragraph -->'
             . '<!-- wp:list --><ul><li>First benefit point</li><li>Second benefit point</li><li>Third benefit point</li></ul><!-- /wp:list -->';
@@ -1708,7 +1590,7 @@ if (!function_exists('wp_theme_demo_about_page_content')) {
         return <<<'HTML'
 <!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5"} -->
 <!-- wp:wpbb/column {"xs":12,"md":6} -->
-<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x700/e2e8f0/0f172a?text=About+Us" alt="About us" width="900" height="700"/></figure><!-- /wp:image -->
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x700/e2e8f0/0f172a?text=About+Us" alt="About us"/></figure><!-- /wp:image -->
 <!-- /wp:wpbb/column -->
 <!-- wp:wpbb/column {"xs":12,"md":6} -->
 <!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">About</p><!-- /wp:paragraph -->
@@ -1735,12 +1617,14 @@ if (!function_exists('wp_theme_demo_contact_page_content')) {
 <!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 align-items-start"} -->
 <!-- wp:wpbb/column {"xs":12,"md":5} -->
 <!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Contact</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Let’s plan your next website release.</h1><!-- /wp:heading -->
-<!-- wp:html --><div class="wp-theme-demo-card"><p><strong>Email</strong><br/>hello@example.com</p><p><strong>Phone</strong><br/>+44 0000 000000</p><p><strong>Address</strong><br/>123 Business Street, London</p><p><strong>Hours</strong><br/>Mon–Fri · 09:00–17:30</p></div><!-- /wp:html -->
+<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Let’s talk about your project.</h1><!-- /wp:heading -->
+<!-- wp:html --><div class="wp-theme-demo-card"><p><strong>Email</strong><br/>hello@example.com</p><p><strong>Phone</strong><br/>+44 0000 000000</p><p><strong>Address</strong><br/>123 Business Street, London</p></div><!-- /wp:html -->
 <!-- wp:wpbb/dynamic-form {"showTitle":true,"formTitle":"Send us a message"} /-->
 <!-- /wp:wpbb/column -->
 <!-- wp:wpbb/column {"xs":12,"md":7} -->
-<!-- wp:wpbb/google-map {"title":"Find us","address":"123 Business Street, London","embedUrl":"https://www.google.com/maps?q=123+Business+Street,+London&output=embed","height":"420px"} /-->
+<!-- wp:embed {"url":"https://www.google.com/maps?q=London&output=embed","type":"rich","providerNameSlug":"google"} -->
+<figure class="wp-block-embed is-type-rich is-provider-google wp-block-embed-google"><div class="wp-block-embed__wrapper">https://www.google.com/maps?q=London&output=embed</div></figure>
+<!-- /wp:embed -->
 <!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
 HTML;
@@ -1748,7 +1632,6 @@ HTML;
 }
 
 if (!function_exists('wp_theme_seed_demo_blog_posts')) {
-
     function wp_theme_seed_demo_blog_posts() {
         for ($i = 1; $i <= 5; $i++) {
             $slug = 'demo-blog-post-' . $i;
