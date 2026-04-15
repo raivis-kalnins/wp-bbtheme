@@ -245,26 +245,56 @@ if (!function_exists('wp_theme_style_size_triplet_fields')) {
 
 
 
+if (!function_exists('wp_theme_admin_cpt_url')) {
+    function wp_theme_admin_cpt_url($preferred, $fallbacks = []) {
+        $slugs = array_merge((array) $preferred, (array) $fallbacks);
+        foreach ($slugs as $slug) {
+            if ($slug && post_type_exists($slug)) {
+                return admin_url('edit.php?post_type=' . $slug);
+            }
+        }
+        $first = reset($slugs);
+        return admin_url('edit.php?post_type=' . $first);
+    }
+}
+
 if (!function_exists('wp_theme_general_tools_markup')) {
     function wp_theme_general_tools_markup() {
-        $home = home_url('/');
         $slug = trim((string) wp_theme_acf_get('theme_custom_login_slug', 'option', 'tfa-admin'), '/');
         if ($slug === '') {
             $slug = 'tfa-admin';
         }
 
-        $items = [
-            ['label' => 'Bookings', 'url' => admin_url('edit.php?post_type=theme_booking')],
-            ['label' => 'Events', 'url' => admin_url('edit.php?post_type=event')],
-            ['label' => 'Products', 'url' => admin_url('edit.php?post_type=products')],
-            ['label' => 'Case Studies', 'url' => admin_url('edit.php?post_type=case-study')],
-            ['label' => 'Testimonials', 'url' => admin_url('edit.php?post_type=testimonial')],
-            ['label' => 'Megamenu', 'url' => admin_url('themes.php?page=edit.php?post_type=megamenu')],
-            ['label' => 'Custom Login', 'url' => home_url('/' . $slug . '/')],
-            ['label' => 'Pages Order', 'url' => admin_url('edit.php?post_type=page')],
-            ['label' => 'Posts Order', 'url' => admin_url('edit.php')],
-            ['label' => 'Documentation', 'url' => admin_url('admin.php?page=wp-theme-docs')],
-        ];
+        $items = [];
+
+        if ((bool) wp_theme_acf_get('theme_enable_booking_cpt', 'option', 0)) {
+            $items[] = ['label' => 'Bookings', 'url' => admin_url('edit.php?post_type=theme_booking')];
+        }
+
+        if ((bool) wp_theme_acf_get('theme_enable_event_cpt', 'option', 0)) {
+            $items[] = ['label' => 'Events', 'url' => admin_url('edit.php?post_type=event')];
+        }
+
+        if ((bool) wp_theme_acf_get('theme_enable_products_cpt', 'option', 0)) {
+            $items[] = ['label' => 'Products', 'url' => admin_url('edit.php?post_type=products')];
+        }
+
+        if ((bool) wp_theme_acf_get('theme_enable_case_study_cpt', 'option', 0)) {
+            $items[] = ['label' => 'Case Studies', 'url' => admin_url('edit.php?post_type=case-study')];
+        }
+
+        if ((bool) wp_theme_acf_get('theme_enable_testimonial_cpt', 'option', 0)) {
+            $items[] = ['label' => 'Testimonials', 'url' => admin_url('edit.php?post_type=testimonial')];
+        }
+
+        if ((bool) wp_theme_acf_get('theme_enable_megamenu_cpt', 'option', 0)) {
+            $items[] = ['label' => 'Megamenu', 'url' => admin_url('edit.php?post_type=megamenu')];
+        }
+
+        $items[] = ['label' => 'Custom Login', 'url' => home_url('/' . $slug . '/')];
+        $items[] = ['label' => 'Pages Order', 'url' => admin_url('edit.php?post_type=page')];
+        $items[] = ['label' => 'Posts Order', 'url' => admin_url('edit.php')];
+        $items[] = ['label' => 'Documentation', 'url' => admin_url('admin.php?page=wp-theme-docs')];
 
         $html = '<div class="wp-theme-general-tools">';
         foreach ($items as $item) {

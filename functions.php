@@ -15,6 +15,45 @@ function wp_theme_acf_get($key, $post_id = 'option', $default = '') {
     return $default;
 }
 
+
+function wp_theme_optional_cpt_option_map() {
+    return [
+        'theme_booking' => 'theme_enable_booking_cpt',
+        'event'         => 'theme_enable_event_cpt',
+        'products'      => 'theme_enable_products_cpt',
+        'case-study'    => 'theme_enable_case_study_cpt',
+        'testimonial'   => 'theme_enable_testimonial_cpt',
+        'megamenu'      => 'theme_enable_megamenu_cpt',
+    ];
+}
+
+function wp_theme_filter_optional_cpt_args($args, $post_type) {
+    $map = wp_theme_optional_cpt_option_map();
+    if (!isset($map[$post_type])) {
+        return $args;
+    }
+
+    $is_enabled = (bool) wp_theme_acf_get($map[$post_type], 'option', 0);
+    if ($is_enabled) {
+        return $args;
+    }
+
+    $args['public'] = false;
+    $args['publicly_queryable'] = false;
+    $args['show_ui'] = false;
+    $args['show_in_menu'] = false;
+    $args['show_in_admin_bar'] = false;
+    $args['show_in_nav_menus'] = false;
+    $args['show_in_rest'] = false;
+    $args['has_archive'] = false;
+    $args['rewrite'] = false;
+    $args['query_var'] = false;
+    $args['exclude_from_search'] = true;
+
+    return $args;
+}
+add_filter('register_post_type_args', 'wp_theme_filter_optional_cpt_args', 10, 2);
+
 function wp_theme_setup() {
     load_theme_textdomain('wp-theme', get_template_directory() . '/languages');
     add_theme_support('title-tag');
