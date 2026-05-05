@@ -36,9 +36,6 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_login_logo'           => '',
             'theme_login_logo_width'     => '160',
             'theme_login_logo_height'    => '80',
-            'theme_redirect_wp_admin_home' => 0,
-            'theme_enable_custom_login_slug' => 0,
-            'theme_custom_login_slug'    => 'tfa-admin',
 
             'theme_general_cta_text'     => '',
             'theme_general_cta_url'      => '',
@@ -260,11 +257,6 @@ if (!function_exists('wp_theme_admin_cpt_url')) {
 
 if (!function_exists('wp_theme_general_tools_markup')) {
     function wp_theme_general_tools_markup() {
-        $slug = trim((string) wp_theme_acf_get('theme_custom_login_slug', 'option', 'tfa-admin'), '/');
-        if ($slug === '') {
-            $slug = 'tfa-admin';
-        }
-
         $items = [];
 
         if ((bool) wp_theme_acf_get('theme_enable_booking_cpt', 'option', 0)) {
@@ -291,7 +283,6 @@ if (!function_exists('wp_theme_general_tools_markup')) {
             $items[] = ['label' => 'Megamenu', 'url' => admin_url('edit.php?post_type=megamenu')];
         }
 
-        $items[] = ['label' => 'Custom Login', 'url' => home_url('/' . $slug . '/')];
         $items[] = ['label' => 'Pages Order', 'url' => admin_url('edit.php?post_type=page')];
         $items[] = ['label' => 'Posts Order', 'url' => admin_url('edit.php')];
         $items[] = ['label' => 'Documentation', 'url' => admin_url('admin.php?page=wp-theme-docs')];
@@ -301,7 +292,7 @@ if (!function_exists('wp_theme_general_tools_markup')) {
             $html .= '<a class="button button-secondary" target="_blank" rel="noopener" href="' . esc_url($item['url']) . '">' . esc_html($item['label']) . '</a>';
         }
         $html .= '</div>';
-        $html .= '<p class="description">Compact on/off switches live above. Use these shortcuts after enabling the matching function. Current custom login URL: <code>' . esc_html(home_url('/' . $slug . '/')) . '</code></p>';
+        $html .= '<p class="description">Compact on/off switches live above. Use these shortcuts after enabling the matching function.</p>';
         return $html;
     }
 }
@@ -620,10 +611,6 @@ if (!function_exists('wp_theme_register_style_fields')) {
         $fields[] = ['key'=>'field_theme_login_logo','label'=>'Login Logo Image','name'=>'theme_login_logo','type'=>'image','return_format'=>'array','preview_size'=>'medium','library'=>'all','wrapper'=>['width'=>'32','class'=>'wp-theme-general-field']];
         $fields[] = ['key'=>'field_theme_login_logo_width','label'=>'Logo Width','name'=>'theme_login_logo_width','type'=>'text','default_value'=>'160','wrapper'=>['width'=>'16','class'=>'wp-theme-general-field']];
         $fields[] = ['key'=>'field_theme_login_logo_height','label'=>'Logo Height','name'=>'theme_login_logo_height','type'=>'text','default_value'=>'80','wrapper'=>['width'=>'16','class'=>'wp-theme-general-field']];
-        $fields[] = ['key'=>'field_theme_redirect_wp_admin_home','label'=>'Redirect /wp-admin to homepage','name'=>'theme_redirect_wp_admin_home','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
-        $fields[] = ['key'=>'field_theme_enable_custom_login_slug','label'=>'Enable custom wp-admin login slug','name'=>'theme_enable_custom_login_slug','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
-        $fields[] = ['key'=>'field_theme_custom_login_slug','label'=>'Custom login slug','name'=>'theme_custom_login_slug','type'=>'text','default_value'=>'tfa-admin','instructions'=>'Example: tfa-admin. Visit /your-slug/ to log in. Direct wp-login.php can redirect home when enabled.','wrapper'=>['width'=>'32','class'=>'wp-theme-general-field']];
-        $fields[] = ['key'=>'field_msg_theme_login_slug_hint','label'=>'','name'=>'','type'=>'message','message'=>'<span>Keep the custom login slug disabled until you confirm the slug. When enabled, use the custom slug URL instead of wp-login.php.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
 
         $fields[] = ['key'=>'field_msg_theme_asset_hint','label'=>'','name'=>'','type'=>'message','message'=>'<strong>SEO asset controls</strong><br><span>Keep everything off by default. Turn on only the frontend asset rules you really need for homepage and library optimisation.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
         $fields[] = ['key'=>'field_theme_smart_library_loading','label'=>'Smart library loading','name'=>'theme_smart_library_loading','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];

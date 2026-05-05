@@ -418,7 +418,7 @@ add_action('admin_notices', function () {
     }
 });
 
-foreach (['acf-theme-options.php','performance-tools.php','booking.php','events.php','login-security.php','developer-tools.php','admin-ordering.php','tpl-helper.php','shortcodes.php','loc.php','info.php','block-types.php','wp-nav-walker.php'] as $file) {
+foreach (['acf-theme-options.php','performance-tools.php','booking.php','events.php','developer-tools.php','admin-ordering.php','tpl-helper.php','shortcodes.php','loc.php','info.php','block-types.php','wp-nav-walker.php'] as $file) {
     $path = get_template_directory() . '/inc/Custom/' . $file;
     if (file_exists($path)) {
         require_once $path;

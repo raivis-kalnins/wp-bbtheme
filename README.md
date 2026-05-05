@@ -27,15 +27,8 @@ Everything is off by default unless noted otherwise.
 
 When enabled, the matching CPT becomes available in admin. Megamenu is shown under **Appearance**.
 
-### Login and Admin Security
-- Redirect `/wp-admin` to homepage for logged-out users
-- Enable custom login slug
-- Custom login slug value, for example `tfa-admin`
-
-When enabled, the custom slug becomes the login entry point and direct `wp-login.php` access is redirected.
-
 ### General Shortcuts
-The General tab includes quick links to common admin areas such as Bookings, Events, Products, Case Studies, Testimonials, Megamenu, and the current custom login URL.
+The General tab includes quick links to common admin areas such as Bookings, Events, Products, Case Studies, Testimonials, and Megamenu.
 
 ## Theme Settings -> Bookings
 
@@ -154,7 +147,6 @@ Recommended classes:
 - Use Event CPT for event-driven booking flows
 - Keep developer tools disabled on normal usage
 - Save permalinks after enabling new CPTs
-- Test custom login slug in a private window before rollout
 
 ## Documentation in Admin
 
