@@ -151,3 +151,19 @@ Recommended classes:
 ## Documentation in Admin
 
 A Documentation screen is available from Theme Settings so project editors can review the current feature set without opening theme files.
+
+## Sector demos
+
+`Settings -> Theme Settings -> Demo Import` imports the profile supplied by the active child theme. The import is safe to run repeatedly and always updates the same `demo-homepage` page.
+
+- business profiles create a Homepage, About, Services, Industries, Blog and Contact structure
+- commerce profiles let `wp-theme-woo-support` add shop pages, sector products, filters and load more
+- the importer creates only `Header Menu` and `Footer Menu` and assigns the two registered locations
+- switching profiles replaces importer-owned demo products; it never deletes ordinary shop products
+- child themes supply profiles with `wp_theme_demo_profile` and integrations extend imports through `wp_theme_before_demo_import`, `wp_theme_demo_extra_home_sections` and navigation filters
+
+## Asset ownership
+
+The parent owns PHP structure, settings and shared functionality only. It enqueues only its metadata stylesheet and does not ship a frontend build. Frontend presentation and JavaScript belong to each child theme. The default child owns the full Vite build; sector children own their standalone sector styles, navigation script and demo-import admin asset.
+
+WooCommerce behaviour is supplied by the separate `wp-theme-woo-support` plugin.
