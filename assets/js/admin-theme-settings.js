@@ -180,6 +180,23 @@ function initAnimationUI() {
     showTab('#bbtheme-tab-general');
   }
   replayPreview();
+
+  const nativePreview = document.querySelector('[data-bbtheme-native-preview]');
+  if (nativePreview) {
+    const object = nativePreview.querySelector('.bbtheme-native-preview__object');
+    const code = nativePreview.querySelector('[data-native-motion-code]');
+    nativePreview.querySelectorAll('[data-native-motion]').forEach((button) => {
+      button.addEventListener('click', function () {
+        const preset = button.getAttribute('data-native-motion') || 'motion-fade-up';
+        nativePreview.querySelectorAll('[data-native-motion]').forEach((item) => item.classList.toggle('is-selected', item === button));
+        if (code) code.textContent = preset;
+        if (!object) return;
+        object.className = 'bbtheme-native-preview__object ' + preset;
+        void object.offsetWidth;
+        window.requestAnimationFrame(() => object.classList.add('is-visible'));
+      });
+    });
+  }
 }
 
   function initMediaLibraryImport() {

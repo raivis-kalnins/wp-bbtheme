@@ -117,5 +117,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+
+  const nativePreview = document.querySelector('[data-bbtheme-native-preview]');
+  if (nativePreview) {
+    const nativeObject = nativePreview.querySelector('.bbtheme-native-preview__object');
+    const nativeCode = nativePreview.querySelector('[data-native-motion-code]');
+    nativePreview.querySelectorAll('[data-native-motion]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const motion = button.getAttribute('data-native-motion') || 'motion-fade-up';
+        nativePreview.querySelectorAll('[data-native-motion]').forEach(function (item) { item.classList.toggle('is-selected', item === button); });
+        if (nativeCode) nativeCode.textContent = motion;
+        if (!nativeObject) return;
+        nativeObject.className = 'bbtheme-native-preview__object ' + motion;
+        void nativeObject.offsetWidth;
+        window.requestAnimationFrame(function () { nativeObject.classList.add('is-visible'); });
+      });
+    });
+  }
   replayPreview(previewSelect ? previewSelect.value : '');
 });
