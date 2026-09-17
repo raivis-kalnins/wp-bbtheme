@@ -60,6 +60,7 @@ if (!function_exists('bbtheme_get_animation_settings_defaults')) {
     function bbtheme_get_animation_settings_defaults() {
         return [
             'enabled' => '1',
+            'engine' => 'native',
             'default_class' => 'animate__fadeInUp',
             'default_duration' => '1s',
             'default_delay' => '0s',
@@ -133,8 +134,12 @@ if (!function_exists('bbtheme_sanitize_animation_settings')) {
             $default_class = $defaults['default_class'];
         }
 
+        $engine = sanitize_key($input['engine'] ?? $defaults['engine']);
+        if (!in_array($engine, ['native','animate','both'], true)) { $engine = 'native'; }
+
         return [
             'enabled' => empty($input['enabled']) ? '' : '1',
+            'engine' => $engine,
             'default_class' => $default_class,
             'default_duration' => bbtheme_sanitize_css_time($input['default_duration'] ?? $defaults['default_duration'], $defaults['default_duration']),
             'default_delay' => bbtheme_sanitize_css_time($input['default_delay'] ?? $defaults['default_delay'], $defaults['default_delay']),

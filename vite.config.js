@@ -22,7 +22,6 @@ export default defineConfig({
         rollupOptions: {
             // overwrite default .html entry
             input: {
-                style: "src/scss/public.scss",
                 script: "src/js/main.js",
             },
         },

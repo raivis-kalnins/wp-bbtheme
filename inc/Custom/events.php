@@ -5,7 +5,8 @@ if (!defined('ABSPATH')) {
 
 if (!function_exists('wp_theme_event_enabled')) {
     function wp_theme_event_enabled() {
-        return (bool) wp_theme_acf_get('theme_enable_event_cpt', 'option', 0);
+        $enabled = (bool) wp_theme_acf_get('theme_enable_event_cpt', 'option', 0);
+        return (bool) apply_filters('wp_theme_optional_cpt_enabled', $enabled, 'event', 'theme_enable_event_cpt');
     }
 }
 

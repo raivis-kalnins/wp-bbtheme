@@ -7,7 +7,7 @@
  * Inserter: true
  */
 ?>
-<!-- wp:wpbb/row {"customClasses":"container-fluid px-4 py-3 bg-white border-bottom align-items-center shadow-sm"} -->
+<!-- wp:wpbb/row {"containerClass":"container-fluid","customClasses":"px-4 py-3 bg-white border-bottom align-items-center shadow-sm"} -->
 <!-- wp:wpbb/column {"xs":12,"md":3,"customClasses":"d-flex align-items-center justify-content-center justify-content-md-start mb-3 mb-md-0"} -->
 <!-- wp:site-logo {"width":152} /-->
 <!-- /wp:wpbb/column -->

@@ -26,7 +26,7 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_content_width'        => '840px',
             'theme_wide_width'           => '1280px',
             'theme_gutter_width'         => '1.5rem',
-            'theme_section_spacing'      => 'clamp(2rem, 4vw, 5rem)',
+            'theme_section_spacing'      => '64px',
             'theme_radius'               => '18px',
 
             'media_glightbox'            => 'false',
@@ -36,6 +36,9 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_login_logo'           => '',
             'theme_login_logo_width'     => '160',
             'theme_login_logo_height'    => '80',
+            'theme_language_switcher_enabled' => 1,
+            'theme_language_switcher_format'  => 'code_name',
+            'theme_language_switcher_mobile'  => 1,
 
             'theme_general_cta_text'     => '',
             'theme_general_cta_url'      => '',
@@ -93,6 +96,7 @@ if (!function_exists('wp_theme_style_defaults')) {
             'theme_custom_colors'        => [],
 
             'theme_anim_enabled'         => 1,
+            'theme_motion_engine'         => 'native',
             'theme_anim_default_class'   => 'animate__fadeInUp',
             'theme_anim_duration'        => '1s',
             'theme_anim_delay'           => '0s',
@@ -162,7 +166,7 @@ if (!function_exists('wp_theme_style_defaults')) {
 
 if (!function_exists('wp_theme_demo_import_enabled')) {
     function wp_theme_demo_import_enabled() {
-        return (bool) wp_theme_acf_get('theme_enable_demo_import', 'option', 0);
+        return function_exists('wp_theme_global_feature_flag') ? wp_theme_global_feature_flag('theme_enable_demo_import', false) : (bool) wp_theme_acf_get('theme_enable_demo_import', 'option', 0);
     }
 }
 
@@ -177,7 +181,7 @@ if (!function_exists('wp_theme_style_tokens')) {
         $defaults = wp_theme_style_defaults();
         $tokens = [];
         foreach ($defaults as $key => $default) {
-            $value = function_exists('get_field') ? get_field($key, 'option') : null;
+            $value = function_exists('wp_theme_acf_get') ? wp_theme_acf_get($key, 'option', null) : null;
             $tokens[$key] = ($value !== null && $value !== false && $value !== '') ? $value : $default;
         }
         foreach (['theme_custom_colors', 'theme_font_variables'] as $array_key) {
@@ -390,7 +394,7 @@ if (!function_exists('wp_theme_docs_render_page')) {
         $markdown = file_exists($path) ? file_get_contents($path) : '# Documentation\n\nREADME.md not found.';
         echo '<div class="wrap wp-theme-docs">';
         echo '<h1>' . esc_html__('Theme Documentation', 'wp-theme') . '</h1>';
-        echo '<p><a class="button button-secondary" href="' . esc_url(admin_url('admin.php?page=wp-theme-settings')) . '">' . esc_html__('Back to Theme Settings', 'wp-theme') . '</a></p>';
+        echo '<p><a class="button button-secondary" href="' . esc_url(admin_url('options-general.php?page=wp-theme-settings')) . '">' . esc_html__('Back to Theme Settings', 'wp-theme') . '</a></p>';
         echo '<div class="notice notice-info inline"><p>' . esc_html__('This screen renders the README.md bundled with the parent theme.', 'wp-theme') . '</p></div>';
         echo '<div class="wp-theme-docs-card" style="background:#fff;border:1px solid #dcdcde;border-radius:12px;padding:24px;max-width:1100px;line-height:1.6;">';
         echo wp_kses_post(wp_theme_docs_markdown_to_html($markdown));
@@ -428,6 +432,19 @@ if (!function_exists('wp_theme_animation_settings_markup')) {
         ob_start();
         ?>
         <div class="bbtheme-animation-admin bbtheme-animation-admin--embedded">
+            <div class="bbtheme-motion-overview">
+                <div><span class="bbtheme-motion-overview__kicker"><?php esc_html_e('Motion system', 'wp-theme'); ?></span><h2><?php esc_html_e('Preview motion before you use it.', 'wp-theme'); ?></h2><p><?php esc_html_e('Prefer the zero-dependency native engine for child themes. Animate.css remains available for legacy content. Every preset respects reduced-motion preferences.', 'wp-theme'); ?></p></div>
+                <div class="bbtheme-native-preview" data-bbtheme-native-preview>
+                    <div class="bbtheme-native-preview__stage"><div class="bbtheme-native-preview__object motion-fade-up is-visible"><span></span><strong><?php esc_html_e('Live motion', 'wp-theme'); ?></strong></div></div>
+                    <div class="bbtheme-native-preview__actions" role="group" aria-label="<?php esc_attr_e('Native motion presets', 'wp-theme'); ?>">
+                        <button type="button" class="button is-selected" data-native-motion="motion-fade-up"><?php esc_html_e('Fade up', 'wp-theme'); ?></button>
+                        <button type="button" class="button" data-native-motion="motion-fade-left"><?php esc_html_e('Fade left', 'wp-theme'); ?></button>
+                        <button type="button" class="button" data-native-motion="motion-scale-in"><?php esc_html_e('Scale in', 'wp-theme'); ?></button>
+                        <button type="button" class="button" data-native-motion="motion-reveal"><?php esc_html_e('Reveal', 'wp-theme'); ?></button>
+                    </div>
+                    <code data-native-motion-code>motion-fade-up</code>
+                </div>
+            </div>
             <h2 class="nav-tab-wrapper bbtheme-animation-tabs">
                 <a href="#bbtheme-tab-general" class="nav-tab nav-tab-active"><?php esc_html_e('General', 'wp-theme'); ?></a>
                 <a href="#bbtheme-tab-preview" class="nav-tab"><?php esc_html_e('Preview', 'wp-theme'); ?></a>
@@ -609,6 +626,19 @@ if (!function_exists('wp_theme_register_style_fields')) {
         
         $fields[] = ['key'=>'tab_theme_general','label'=>'General','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_general_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>WP Options General</strong><br><span>Compact conditional controls for CPTs, login tools, and theme features.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro wp-theme-general-intro']];
+        $general_extension = (string) apply_filters('wp_theme_general_settings_extension_markup', '');
+        if ('' !== trim($general_extension)) {
+            $fields[] = [
+                'key' => 'msg_theme_general_extension',
+                'label' => '',
+                'name' => '',
+                'type' => 'message',
+                'message' => $general_extension,
+                'new_lines' => '',
+                'esc_html' => 0,
+                'wrapper' => ['class' => 'wp-theme-settings-extension wp-theme-general-extension'],
+            ];
+        }
         $fields[] = ['key' => 'msg_theme_general_tools', 'label' => '', 'name' => '', 'type' => 'message', 'message' => wp_theme_general_tools_markup(), 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-general-tools-wrap']];
         $fields[] = ['key'=>'field_media_glightbox','label'=>'Enable Lightbox','name'=>'media_glightbox','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
         $fields[] = ['key'=>'field_select2_js','label'=>'Enable Select2','name'=>'select2_js','type'=>'true_false','ui'=>1,'default_value'=>0,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
@@ -638,6 +668,36 @@ if (!function_exists('wp_theme_register_style_fields')) {
         $fields[] = ['key'=>'field_theme_disable_wp_embed_front','label'=>'Disable wp-embed','name'=>'theme_disable_wp_embed_front','type'=>'true_false','ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']];
         $fields[] = ['key'=>'field_msg_theme_asset_hint_2','label'=>'','name'=>'','type'=>'message','message'=>'<span>Smart library loading keeps Alpine and Lightbox off pages that do not appear to use them. Homepage switches only affect the front page.</span>','esc_html'=>0,'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']];
 
+
+
+        $fields[] = ['key'=>'tab_theme_languages','label'=>'Languages','type'=>'tab'];
+        $polylang_active = function_exists('pll_the_languages');
+        $polylang_admin_url = admin_url('admin.php?page=mlang');
+        $polylang_status = $polylang_active
+            ? '<strong>Polylang detected.</strong> The frontend header language switcher is enabled automatically and displays only languages configured in Polylang.'
+            : '<strong>Polylang is not active.</strong> Install/activate Polylang to enable real language URLs in the header switcher.';
+        $fields[] = [
+            'key'=>'msg_theme_languages_intro','label'=>'','name'=>'','type'=>'message','esc_html'=>0,
+            'message'=>'<strong>Polylang &amp; multilingual options</strong><br><span>' . $polylang_status . ' English is the project default/fallback and is ordered first. Recommended set: German, Spanish, French, Polish, Russian; Baltic — Latvian, Lithuanian, Estonian; Nordic — Danish, Swedish, Norwegian, Finnish and Icelandic. With <em>ACF Options for Polylang</em>, choose the admin language in the Polylang toolbar before editing language-specific option content.</span><br><br><a class="button button-secondary" href="' . esc_url($polylang_admin_url) . '">Open Polylang Languages</a>',
+            'wrapper'=>['class'=>'wp-theme-settings-intro']
+        ];
+        $fields[] = [
+            'key'=>'field_theme_language_switcher_enabled','label'=>'Header language switcher','name'=>'theme_language_switcher_enabled','type'=>'true_false',
+            'ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','instructions'=>'When Polylang is active the switcher is shown in the header by default. Turn this off only for a deliberately single-language header.','wrapper'=>['width'=>'32']
+        ];
+        $fields[] = [
+            'key'=>'field_theme_language_switcher_format','label'=>'Switcher display','name'=>'theme_language_switcher_format','type'=>'select',
+            'choices'=>['code_name'=>'Language code + name','code_only'=>'Language code only'],'default_value'=>'code_name','ui'=>1,'wrapper'=>['width'=>'34']
+        ];
+        $fields[] = [
+            'key'=>'field_theme_language_switcher_mobile','label'=>'Show language switcher on mobile','name'=>'theme_language_switcher_mobile','type'=>'true_false',
+            'ui'=>1,'default_value'=>1,'ui_on_text'=>'On','ui_off_text'=>'Off','wrapper'=>['width'=>'32']
+        ];
+        $fields[] = [
+            'key'=>'msg_theme_language_plugin_note','label'=>'','name'=>'','type'=>'message','esc_html'=>0,
+            'message'=>'<span><strong>Project setup:</strong> add the required languages in Polylang and set English as the default project language. The theme renders the real Polylang language URLs in the header/footer and never creates fake language links. English remains the safe shell fallback when Polylang does not report an active language.</span>',
+            'wrapper'=>['width'=>'100','class'=>'wp-theme-general-note']
+        ];
 
         $fields[] = ['key'=>'tab_theme_acf_hero','label'=>'Custom Heros','type'=>'tab'];
 $fields[] = ['key' => 'msg_theme_hero_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Custom Heros ( Archive &amp; uneditable pages )</strong><br><span>ID shortcode: [custom_hero_shop] = shop</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
@@ -744,7 +804,7 @@ $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
             ['key'=>'field_theme_content_width','label'=>'Content Width','name'=>'theme_content_width','type'=>'text','default_value'=>'840px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_wide_width','label'=>'Wide Width','name'=>'theme_wide_width','type'=>'text','default_value'=>'1280px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_gutter_width','label'=>'Gutter','name'=>'theme_gutter_width','type'=>'text','default_value'=>'1.5rem','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
-            ['key'=>'field_theme_section_spacing','label'=>'Section Spacing','name'=>'theme_section_spacing','type'=>'text','default_value'=>'clamp(2rem, 4vw, 5rem)','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_section_spacing','label'=>'Section Spacing','name'=>'theme_section_spacing','type'=>'text','default_value'=>'64px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_radius','label'=>'Radius','name'=>'theme_radius','type'=>'text','default_value'=>'18px','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
         ]);
 
@@ -802,6 +862,7 @@ $fields[] = ['key'=>'tab_theme_layout','label'=>'Layout','type'=>'tab'];
         $fields[] = ['key' => 'msg_theme_animations_intro', 'label' => '', 'name' => '', 'type' => 'message', 'message' => '<strong>Animation controls</strong><br><span>Full animation UI with preview, library search, integration examples, plus optional Lottie and SVG motion support.</span>', 'new_lines' => 'br', 'esc_html' => 0, 'wrapper' => ['class' => 'wp-theme-settings-intro']];
         $fields = array_merge($fields, [
             ['key'=>'field_theme_anim_enabled','label'=>'Enable Animations','name'=>'theme_anim_enabled','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
+            ['key'=>'field_theme_motion_engine','label'=>'Motion Engine','name'=>'theme_motion_engine','type'=>'button_group','choices'=>['native'=>'Native / Theme','animate'=>'Animate.css','both'=>'Both'],'default_value'=>'native','instructions'=>'Native uses the child-theme IntersectionObserver motion classes and adds no animation library. Animate.css is optional compatibility.','wrapper'=>['width'=>'36','class'=>'wp-theme-motion-engine']],
             ['key'=>'field_theme_anim_disable_mobile','label'=>'Disable on Mobile','name'=>'theme_anim_disable_mobile','type'=>'true_false','ui'=>1,'default_value'=>0,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_anim_reduce_motion','label'=>'Respect Reduced Motion','name'=>'theme_anim_reduce_motion','type'=>'true_false','ui'=>1,'default_value'=>1,'wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
             ['key'=>'field_theme_anim_repeat','label'=>'Repeat Count','name'=>'theme_anim_repeat','type'=>'select','choices'=>['1'=>'1','2'=>'2','3'=>'3','infinite'=>'infinite'],'default_value'=>'1','wrapper'=>['width'=>'16','class'=>'wp-theme-general-toggle']],
@@ -1161,26 +1222,27 @@ if (!function_exists('wp_theme_sync_animation_settings_from_acf')) {
         }
 
         $choices = bbtheme_get_animation_choices();
-        $default_class = get_field('theme_anim_default_class', 'option');
+        $default_class = wp_theme_acf_get('theme_anim_default_class', 'option', '');
         if (!is_string($default_class) || !isset($choices[$default_class])) {
             $default_class = 'animate__fadeInUp';
         }
 
-        $repeat = (string) get_field('theme_anim_repeat', 'option');
+        $repeat = (string) wp_theme_acf_get('theme_anim_repeat', 'option', '1');
         if (!in_array($repeat, ['1', '2', '3', 'infinite'], true)) {
             $repeat = '1';
         }
 
         update_option('bbtheme_animation_settings', [
-            'enabled' => get_field('theme_anim_enabled', 'option') ? '1' : '',
+            'enabled' => wp_theme_acf_get('theme_anim_enabled', 'option', 0) ? '1' : '',
+            'engine' => in_array((string) wp_theme_acf_get('theme_motion_engine', 'option', 'native'), ['native','animate','both'], true) ? (string) wp_theme_acf_get('theme_motion_engine', 'option', 'native') : 'native',
             'default_class' => $default_class,
-            'default_duration' => (string) get_field('theme_anim_duration', 'option'),
-            'default_delay' => (string) get_field('theme_anim_delay', 'option'),
+            'default_duration' => (string) wp_theme_acf_get('theme_anim_duration', 'option', ''),
+            'default_delay' => (string) wp_theme_acf_get('theme_anim_delay', 'option', ''),
             'default_repeat' => $repeat,
-            'disable_on_mobile' => get_field('theme_anim_disable_mobile', 'option') ? '1' : '',
-            'respect_reduced_motion' => get_field('theme_anim_reduce_motion', 'option') ? '1' : '',
-            'custom_class' => (string) get_field('theme_anim_custom_class', 'option'),
-            'preview_text' => (string) get_field('theme_anim_preview_text', 'option'),
+            'disable_on_mobile' => wp_theme_acf_get('theme_anim_disable_mobile', 'option', 0) ? '1' : '',
+            'respect_reduced_motion' => wp_theme_acf_get('theme_anim_reduce_motion', 'option', 0) ? '1' : '',
+            'custom_class' => (string) wp_theme_acf_get('theme_anim_custom_class', 'option', ''),
+            'preview_text' => (string) wp_theme_acf_get('theme_anim_preview_text', 'option', ''),
         ]);
     }
 }
@@ -1454,19 +1516,19 @@ if (!function_exists('wp_theme_enqueue_admin_assets')) {
         }
 
         foreach ([
-            get_stylesheet_directory() . '/assets/css/admin-theme-settings.css',
-            get_stylesheet_directory() . '/assets/css/admin-animations.css',
+            get_template_directory() . '/assets/css/admin-theme-settings.css',
+            get_template_directory() . '/assets/css/admin-animations.css',
         ] as $file) {
             if (file_exists($file)) {
-                $relative = str_replace(wp_normalize_path(get_stylesheet_directory()), '', wp_normalize_path($file));
-                wp_enqueue_style('wp-theme-admin-' . md5($file), get_stylesheet_directory_uri() . $relative, [], filemtime($file));
+                $relative = str_replace(wp_normalize_path(get_template_directory()), '', wp_normalize_path($file));
+                wp_enqueue_style('wp-theme-admin-' . md5($file), get_template_directory_uri() . $relative, [], filemtime($file));
             }
         }
 
-        $js_file = get_stylesheet_directory() . '/assets/js/admin-theme-settings.js';
+        $js_file = get_template_directory() . '/assets/js/admin-theme-settings.js';
         if (file_exists($js_file)) {
             wp_enqueue_style('bbtheme-animate-admin', 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css', [], '4.1.1');
-            wp_enqueue_script('wp-theme-settings-admin', get_stylesheet_directory_uri() . '/assets/js/admin-theme-settings.js', [], filemtime($js_file), true);
+            wp_enqueue_script('wp-theme-settings-admin', get_template_directory_uri() . '/assets/js/admin-theme-settings.js', [], filemtime($js_file), true);
             wp_localize_script('wp-theme-settings-admin', 'BBThemeAdminSettings', [
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('wp_theme_settings_nonce'),
@@ -1606,135 +1668,94 @@ if (!function_exists('wp_theme_demo_homepage_content')) {
         if (function_exists('wp_theme_build_sector_homepage_content')) {
             return wp_theme_build_sector_homepage_content();
         }
-        return <<<'HTML'
-<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 py-lg-6 align-items-center wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-hero"} -->
-<!-- wp:wpbb/column {"xs":12,"md":7,"uniqueId":"wpbb-col-demo-hero-copy"} -->
-<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Standard Business / SaaS</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Build a cleaner SaaS website with WP BBuilder-powered sections.</h1><!-- /wp:heading -->
-<!-- wp:paragraph {"className":"wp-theme-demo-copy"} --><p class="wp-theme-demo-copy">A polished starter demo with hero, trust logos, features, pricing, FAQ, blog, and CTA — ready to customize with Bootstrap-friendly blocks.</p><!-- /wp:paragraph -->
-<!-- wp:html --><div class="wp-theme-demo-actions"><a class="btn btn-primary btn-lg px-4 py-3" href="#pricing">Start Free Trial</a><a class="btn btn-outline-dark btn-lg px-4 py-3" href="#pricing">See Pricing</a></div><!-- /wp:html -->
-<!-- wp:html --><div class="row g-3 mt-4"><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>12k+</strong><br/>active users</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>42%</strong><br/>faster onboarding</div></div><div class="col-md-4"><div class="wp-theme-demo-stat"><strong>99.9%</strong><br/>uptime target</div></div></div><!-- /wp:html -->
-<!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":5,"uniqueId":"wpbb-col-demo-hero-media"} -->
-<!-- wp:image {"sizeSlug":"large","linkDestination":"none","className":"wp-theme-demo-hero-image"} --><figure class="wp-block-image size-large wp-theme-demo-hero-image"><img src="https://placehold.co/960x680/e2e8f0/0f172a?text=SaaS+Dashboard" alt="Dashboard preview"/></figure><!-- /wp:image -->
-<!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
+        $image = esc_url(get_template_directory_uri() . '/assets/img/demo/default-hero.svg');
+        $slides = array(
+            array('type'=>'hero','eyebrow'=>__('Business starter','wp-theme'),'title'=>__('Build a clearer website with reusable Gutenberg sections.','wp-theme'),'text'=>__('A Bootstrap-first starter with BBuilder blocks, accessible motion and a maintainable editing workflow.','wp-theme'),'image'=>$image,'buttonText'=>__('Get started','wp-theme'),'buttonUrl'=>'#services'),
+        );
+        $attrs = array('slides'=>$slides,'slidesPerView'=>1,'slidesTablet'=>1,'slidesMobile'=>1,'demoStyle'=>'hero','showPagination'=>true,'showNavigation'=>true);
+        return '<!-- wp:wpbb/row {"containerClass":"container","customClasses":"wp-theme-sector-hero"} --><!-- wp:wpbb/column {"xs":12} --><!-- wp:wpbb/swiper ' . wp_json_encode($attrs, JSON_UNESCAPED_SLASHES) . ' /--><!-- /wp:wpbb/column --><!-- /wp:wpbb/row -->';
+    }
+}
 
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container pb-5 wp-theme-demo-homepage text-center","uniqueId":"wpbb-row-demo-logos"} -->
-<!-- wp:wpbb/column {"xs":6,"md":2,"uniqueId":"wpbb-col-demo-logo-1"} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none","className":"wp-theme-demo-logo"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+1" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2,"uniqueId":"wpbb-col-demo-logo-2"} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none","className":"wp-theme-demo-logo"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+2" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2,"uniqueId":"wpbb-col-demo-logo-3"} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none","className":"wp-theme-demo-logo"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+3" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2,"uniqueId":"wpbb-col-demo-logo-4"} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none","className":"wp-theme-demo-logo"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+4" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2,"uniqueId":"wpbb-col-demo-logo-5"} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none","className":"wp-theme-demo-logo"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+5" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":6,"md":2,"uniqueId":"wpbb-col-demo-logo-6"} --><!-- wp:image {"sizeSlug":"medium","linkDestination":"none","className":"wp-theme-demo-logo"} --><figure class="wp-block-image size-medium wp-theme-demo-logo"><img src="https://placehold.co/180x60/ffffff/64748b?text=Logo+6" alt=""/></figure><!-- /wp:image --><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-features"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-features-heading"} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Features</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Everything you need to launch a modern business site.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4,"uniqueId":"wpbb-col-demo-feature-1"} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">01</div><h4>Reusable blocks</h4><p>Mix Gutenberg content with structured builder blocks for faster editing.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4,"uniqueId":"wpbb-col-demo-feature-2"} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">02</div><h4>Bootstrap layout</h4><p>Rows, columns, utilities, and spacing stay consistent across the site.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":4,"uniqueId":"wpbb-col-demo-feature-3"} --><!-- wp:html --><div class="wp-theme-demo-card"><div class="wp-theme-demo-icon">03</div><h4>Conversion flow</h4><p>Pricing, FAQ, testimonials, blog, and CTA sections work together.</p></div><!-- /wp:html --><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-how"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-how-heading"} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">How It Works</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Go from idea to launch in three steps.</h2><!-- /wp:heading --><!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-how-timeline"} --><!-- wp:wpbb/timeline /--><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","anchor":"pricing","uniqueId":"wpbb-row-demo-pricing"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-pricing"} --><!-- wp:wpbb/pricecards /--><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-faq"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-faq"} --><!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">FAQ</p><!-- /wp:paragraph --><!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Frequently asked questions</h2><!-- /wp:heading --><!-- wp:wpbb/accordion {"flush":false} --><!-- wp:wpbb/accordion-item {"title":"Can I use this as my first live homepage?"} --><p>Yes. Import it, replace the placeholder copy, and set the page as your front page.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Does this use WP BBuilder blocks?"} --><p>Yes. The demo uses WP BBuilder rows, columns, buttons, accordion, CTA section, and blog filter blocks.</p><!-- /wp:wpbb/accordion-item --><!-- wp:wpbb/accordion-item {"title":"Can I swap sections out later?"} --><p>Absolutely. Each section is modular and can be edited or replaced independently.</p><!-- /wp:wpbb/accordion-item --><!-- /wp:wpbb/accordion --><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-blog"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-blog"} --><!-- wp:wpbb/blog-filter {"postsToShow":3,"title":"Latest Posts"} /--><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 pb-lg-6 wp-theme-demo-homepage","anchor":"cta","uniqueId":"wpbb-row-demo-cta"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-cta"} --><!-- wp:wpbb/cta-section {"title":"Ready to launch your new homepage?","text":"Import the layout, replace the content, and start publishing with a cleaner workflow.","buttonText":"Request Demo"} /--><!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-HTML;
+if (!function_exists('wp_theme_demo_local_attachment')) {
+    function wp_theme_demo_local_attachment($path, $title = '') {
+        $path = wp_normalize_path((string) $path);
+        if (!$path || !is_readable($path)) return 0;
+        $key = '_wp_theme_demo_source_hash';
+        $hash = md5($path);
+        $existing = get_posts(['post_type'=>'attachment','post_status'=>'inherit','posts_per_page'=>1,'fields'=>'ids','meta_key'=>$key,'meta_value'=>$hash]);
+        if ($existing) return (int) $existing[0];
+        $upload = wp_upload_dir(); if (!empty($upload['error'])) return 0;
+        $filename = sanitize_file_name(basename($path));
+        $filename = wp_unique_filename($upload['path'], $filename);
+        $target = trailingslashit($upload['path']) . $filename;
+        if (!copy($path, $target)) return 0;
+        $filetype = wp_check_filetype($filename, null);
+        if (empty($filetype['type']) && strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'svg') $filetype['type'] = 'image/svg+xml';
+        $id = wp_insert_attachment(['post_mime_type'=>$filetype['type'] ?: 'image/jpeg','post_title'=>$title ?: pathinfo($filename, PATHINFO_FILENAME),'post_status'=>'inherit'], $target);
+        if (!$id || is_wp_error($id)) return 0;
+        update_post_meta($id, $key, $hash);
+        if (function_exists('wp_generate_attachment_metadata') && false === strpos((string)$filetype['type'], 'svg')) {
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+            $meta = wp_generate_attachment_metadata($id, $target); if ($meta) wp_update_attachment_metadata($id, $meta);
+        }
+        return (int) $id;
     }
 }
 
 if (!function_exists('wp_theme_demo_blog_post_content')) {
-    function wp_theme_demo_blog_post_content($index = 1) {
-        return '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus commodo, libero sit amet feugiat posuere, mauris arcu sodales turpis, sed bibendum enim nisl vel justo.</p><!-- /wp:paragraph -->'
-            . '<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/1200x700/e2e8f0/0f172a?text=Demo+Post+' . intval($index) . '" alt="Demo post"/></figure><!-- /wp:image -->'
-            . '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Section heading</h3><!-- /wp:heading -->'
-            . '<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec at arcu non risus laoreet iaculis. Integer ut augue nisl. Integer interdum sem quis arcu porta, et feugiat dui finibus.</p><!-- /wp:paragraph -->'
-            . '<!-- wp:list --><ul><li>First benefit point</li><li>Second benefit point</li><li>Third benefit point</li></ul><!-- /wp:list -->';
-    }
-}
-
-if (!function_exists('wp_theme_demo_about_page_content')) {
-    function wp_theme_demo_about_page_content() {
-        return <<<'HTML'
-<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 py-lg-6 align-items-center wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-about-hero"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"lg":6,"uniqueId":"wpbb-col-demo-about-media"} -->
-<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="https://placehold.co/900x700/e2e8f0/0f172a?text=About+Us" alt="About us"/></figure><!-- /wp:image -->
-<!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"lg":6,"uniqueId":"wpbb-col-demo-about-copy"} -->
-<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">About</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">A simple story, told with clean blocks.</h1><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec magna justo. Sed posuere sem vel leo feugiat, ac mattis nunc maximus.</p><!-- /wp:paragraph -->
-<!-- wp:paragraph --><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras in purus in orci pharetra tempor sed at nunc.</p><!-- /wp:paragraph -->
-<!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-
-<!-- wp:wpbb/row {"gutterX":"gx-4","gutterY":"gy-4","customClasses":"container py-5 wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-about-timeline"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"uniqueId":"wpbb-col-demo-about-timeline"} -->
-<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Timeline</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":2,"className":"wp-theme-demo-heading"} --><h2 class="wp-block-heading wp-theme-demo-heading">Milestones</h2><!-- /wp:heading -->
-<!-- wp:html --><div class="row g-4"><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2019</strong><p>Company founded and first service offer launched.</p></div></div><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2022</strong><p>Expanded into productized services and platform workflows.</p></div></div><div class="col-md-4"><div class="wp-theme-demo-card"><strong>2026</strong><p>New modern marketing site and reusable content system released.</p></div></div></div><!-- /wp:html -->
-<!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-HTML;
-    }
-}
-
-if (!function_exists('wp_theme_demo_contact_page_content')) {
-    function wp_theme_demo_contact_page_content() {
-        return <<<'HTML'
-<!-- wp:wpbb/row {"gutterX":"gx-5","gutterY":"gy-4","customClasses":"container py-5 py-lg-6 align-items-start wp-theme-demo-homepage","uniqueId":"wpbb-row-demo-contact"} -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"lg":5,"uniqueId":"wpbb-col-demo-contact-info"} -->
-<!-- wp:paragraph {"className":"wp-theme-demo-kicker"} --><p class="wp-theme-demo-kicker">Contact</p><!-- /wp:paragraph -->
-<!-- wp:heading {"level":1,"className":"wp-theme-demo-heading"} --><h1 class="wp-block-heading wp-theme-demo-heading">Let’s talk about your project.</h1><!-- /wp:heading -->
-<!-- wp:html --><div class="wp-theme-demo-card"><p><strong>Email</strong><br/>hello@example.com</p><p><strong>Phone</strong><br/>+44 0000 000000</p><p><strong>Address</strong><br/>123 Business Street, London</p></div><!-- /wp:html -->
-<!-- wp:wpbb/dynamic-form {"showTitle":true,"formTitle":"Send us a message"} /-->
-<!-- /wp:wpbb/column -->
-<!-- wp:wpbb/column {"xs":12,"md":12,"lg":7,"uniqueId":"wpbb-col-demo-contact-map"} -->
-<!-- wp:embed {"url":"https://www.google.com/maps?q=London&output=embed","type":"rich","providerNameSlug":"google"} -->
-<figure class="wp-block-embed is-type-rich is-provider-google wp-block-embed-google"><div class="wp-block-embed__wrapper">https://www.google.com/maps?q=London&output=embed</div></figure>
-<!-- /wp:embed -->
-<!-- /wp:wpbb/column -->
-<!-- /wp:wpbb/row -->
-HTML;
+    function wp_theme_demo_blog_post_content($index = 1, $profile = []) {
+        $profile = is_array($profile) ? $profile : [];
+        $title = !empty($profile['blog'][$index-1]) ? $profile['blog'][$index-1] : sprintf(__('Demo article %d','wp-theme'), $index);
+        $image = '';
+        if (!empty($profile['gallery'])) { $row = $profile['gallery'][($index-1) % count($profile['gallery'])]; $image = !empty($row[0]) ? esc_url($row[0]) : ''; }
+        $content = '<!-- wp:paragraph {"className":"wp-theme-article-lead"} --><p class="wp-theme-article-lead">' . esc_html__('A practical demo article showing how editorial content can support the main customer journey. Replace the copy with your own expertise while keeping the structure.','wp-theme') . '</p><!-- /wp:paragraph -->';
+        // The featured image already provides the primary article media. Avoid
+        // inserting the same starter image again inside the demo article body.
+        $content .= '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">' . esc_html__('Start with the decision the reader is trying to make.','wp-theme') . '</h2><!-- /wp:heading -->';
+        $content .= '<!-- wp:paragraph --><p>' . esc_html__('Strong editorial pages explain the useful details first, then link naturally to the relevant service, product, property or appointment journey. Keep paragraphs short, use descriptive headings and add examples that make the advice credible.','wp-theme') . '</p><!-- /wp:paragraph -->';
+        $content .= '<!-- wp:quote --><blockquote class="wp-block-quote"><p>' . esc_html__('Good content reduces uncertainty before a visitor reaches the form, basket or booking step.','wp-theme') . '</p></blockquote><!-- /wp:quote -->';
+        $content .= '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">' . esc_html__('Turn the article into a reusable content pattern.','wp-theme') . '</h2><!-- /wp:heading -->';
+        $content .= '<!-- wp:list --><ul><li>' . esc_html__('Use a clear opening summary.','wp-theme') . '</li><li>' . esc_html__('Answer the questions visitors ask before they contact you.','wp-theme') . '</li><li>' . esc_html__('Add meaningful images or examples rather than decorative filler.','wp-theme') . '</li><li>' . esc_html__('Finish with one relevant next action.','wp-theme') . '</li></ul><!-- /wp:list -->';
+        return $content;
     }
 }
 
 if (!function_exists('wp_theme_seed_demo_blog_posts')) {
-    function wp_theme_seed_demo_blog_posts() {
-        for ($i = 1; $i <= 5; $i++) {
-            $slug = 'demo-blog-post-' . $i;
+    function wp_theme_seed_demo_blog_posts($profile = []) {
+        $profile = is_array($profile) ? $profile : (function_exists('wp_theme_get_demo_profile') ? wp_theme_get_demo_profile() : []);
+        $titles = !empty($profile['blog']) && is_array($profile['blog']) ? $profile['blog'] : [];
+        if (!$titles) $titles = ['Planning a clearer website','A useful guide for customers','What to review before launch','How to improve an existing page','A practical content checklist'];
+        $profile_id = sanitize_key($profile['id'] ?? 'business');
+        foreach (array_slice($titles, 0, 5) as $i => $title) {
+            $index = $i + 1;
+            $slug = 'demo-' . $profile_id . '-insight-' . $index;
             $existing = get_page_by_path($slug, OBJECT, 'post');
-            $args = [
-                'post_title'   => 'Demo Blog Post ' . $i,
-                'post_name'    => $slug,
-                'post_status'  => 'publish',
-                'post_type'    => 'post',
-                'post_content' => wp_theme_demo_blog_post_content($i),
-            ];
-            if ($existing instanceof WP_Post) {
-                $args['ID'] = $existing->ID;
-                wp_update_post($args);
-            } else {
-                wp_insert_post($args);
+            $args = ['post_title'=>$title,'post_name'=>$slug,'post_status'=>'publish','post_type'=>'post','post_excerpt'=>__('A concise demo insight with useful structure, clear hierarchy and a relevant next step.','wp-theme'),'post_content'=>wp_theme_demo_blog_post_content($index,$profile)];
+            $post_id = 0;
+            if ($existing instanceof WP_Post) { $args['ID']=$existing->ID; $post_id=wp_update_post($args); } else { $post_id=wp_insert_post($args); }
+            if (!$post_id || is_wp_error($post_id)) continue;
+            update_post_meta($post_id,'_wp_theme_demo_blog',1); update_post_meta($post_id,'_wp_theme_demo_profile',$profile_id);
+            if (!empty($profile['blog_categories']) && is_array($profile['blog_categories'])) {
+                $category_name = sanitize_text_field($profile['blog_categories'][$i % count($profile['blog_categories'])]);
+                if ($category_name !== '') {
+                    $term = term_exists($category_name, 'category');
+                    if (!$term) $term = wp_insert_term($category_name, 'category');
+                    if (!is_wp_error($term)) {
+                        $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
+                        if ($term_id) wp_set_post_categories($post_id, [$term_id], false);
+                    }
+                }
+            }
+            if (!empty($profile['blog_paths'])) {
+                $path = $profile['blog_paths'][$i % count($profile['blog_paths'])];
+                $attachment = wp_theme_demo_local_attachment($path, $title); if ($attachment) set_post_thumbnail($post_id,$attachment);
             }
         }
+        $blog = get_page_by_path('blog');
+        $blog_args = ['post_title'=>function_exists('wp_theme_demo_page_label') ? wp_theme_demo_page_label('blog',$profile) : __('Blog','wp-theme'),'post_name'=>'blog','post_status'=>'publish','post_type'=>'page','post_content'=>''];
+        if ($blog instanceof WP_Post) { $blog_args['ID']=$blog->ID; $blog_id=wp_update_post($blog_args); } else { $blog_id=wp_insert_post($blog_args); }
+        if ($blog_id && !is_wp_error($blog_id)) { update_post_meta($blog_id,'_wp_theme_demo_blog_page',1); update_option('page_for_posts',(int)$blog_id); }
     }
 }
 
@@ -1764,6 +1785,89 @@ if (!function_exists('wp_theme_seed_demo_pages')) {
     }
 }
 
+if (!function_exists('wp_theme_reset_demo_template_parts')) {
+    function wp_theme_reset_demo_template_parts() {
+        if (!post_type_exists('wp_template_part')) {
+            return;
+        }
+        $theme_slug = wp_get_theme()->get_stylesheet();
+        $posts = get_posts([
+            'post_type'      => 'wp_template_part',
+            'post_status'    => ['publish','draft'],
+            'posts_per_page' => -1,
+            'post_name__in'  => ['header','footer'],
+        ]);
+        foreach ($posts as $template_part) {
+            $terms = wp_get_object_terms($template_part->ID, 'wp_theme', ['fields' => 'slugs']);
+            if (is_wp_error($terms) || !in_array($theme_slug, (array) $terms, true)) {
+                continue;
+            }
+            wp_delete_post($template_part->ID, true);
+        }
+        if (function_exists('wp_clean_theme_json_cache')) {
+            wp_clean_theme_json_cache();
+        }
+    }
+}
+
+if (!function_exists('wp_theme_cleanup_generated_sector_content')) {
+    function wp_theme_cleanup_generated_sector_content($active_profile) {
+        $active_profile = sanitize_key((string) $active_profile);
+        $map = [
+            'property' => ['meta_key' => '_wp_theme_demo_property', 'keep' => 'realestate'],
+            'doctor'   => ['meta_key' => '_wp_theme_demo_doctor', 'keep' => 'medicine'],
+        ];
+        foreach ($map as $post_type => $config) {
+            if ($active_profile === $config['keep'] || !post_type_exists($post_type)) continue;
+            $ids = get_posts([
+                'post_type' => $post_type,
+                'post_status' => 'any',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'meta_key' => $config['meta_key'],
+                'meta_value' => '1',
+            ]);
+            foreach ($ids as $id) wp_delete_post((int) $id, true);
+        }
+
+        // Demo editorial content is profile-specific. Remove only posts explicitly
+        // created by Starter Setup for a different sector so switching themes does
+        // not leave Medicine articles in a shop demo (or vice versa).
+        $demo_posts = get_posts([
+            'post_type' => 'post',
+            'post_status' => 'any',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'meta_key' => '_wp_theme_demo_blog',
+            'meta_value' => '1',
+        ]);
+        foreach ($demo_posts as $post_id) {
+            $post_profile = sanitize_key((string) get_post_meta((int) $post_id, '_wp_theme_demo_profile', true));
+            if ($post_profile && $post_profile !== $active_profile) wp_delete_post((int) $post_id, true);
+        }
+
+        // v3.2 and earlier created five generic posts without ownership meta.
+        // Remove only those exact generated slugs/titles during Starter Setup.
+        for ($legacy_index = 1; $legacy_index <= 5; $legacy_index++) {
+            $legacy = get_page_by_path('demo-blog-post-' . $legacy_index, OBJECT, 'post');
+            if ($legacy instanceof WP_Post && $legacy->post_title === 'Demo Blog Post ' . $legacy_index) {
+                wp_delete_post((int) $legacy->ID, true);
+            }
+        }
+
+        // Remove the exact early AI placeholder post only when its generated filler
+        // copy is still intact. Real editorial posts with the same title are kept.
+        $ai_placeholder = get_page_by_path('demo-ai-post', OBJECT, 'post');
+        if (!$ai_placeholder) $ai_placeholder = get_page_by_title('Demo AI post', OBJECT, 'post');
+        if ($ai_placeholder instanceof WP_Post) {
+            $body = (string) $ai_placeholder->post_content;
+            if (false !== stripos($body, 'Create a clear professional paragraph about WordPress web development') || false !== stripos($body, 'This content explains WordPress web development in a professional way')) {
+                wp_delete_post((int) $ai_placeholder->ID, true);
+            }
+        }
+    }
+}
+
 if (!function_exists('wp_theme_import_demo_homepage')) {
     function wp_theme_import_demo_homepage() {
         $profile = function_exists('wp_theme_get_demo_profile') ? wp_theme_get_demo_profile() : [];
@@ -1771,6 +1875,19 @@ if (!function_exists('wp_theme_import_demo_homepage')) {
             wp_theme_apply_demo_palette($profile);
         }
         do_action('wp_theme_before_demo_import', $profile);
+        $profile_id = !empty($profile['id']) ? sanitize_key($profile['id']) : 'business';
+        $theme_version = (string) wp_get_theme()->get('Version');
+        $fast_refresh = get_option('wp_theme_active_demo_profile') === $profile_id &&
+            get_option('wp_theme_demo_import_version') === $theme_version;
+        // First import performs the full cleanup. Re-running the same demo/version
+        // refreshes managed objects in place, which is considerably faster and
+        // avoids deleting/recreating media, menus and translated relationships.
+        if (!$fast_refresh) {
+            wp_theme_reset_demo_template_parts();
+            if (function_exists('wp_theme_cleanup_generated_sector_content')) {
+                wp_theme_cleanup_generated_sector_content($profile_id);
+            }
+        }
 
         $page = get_page_by_path('demo-homepage');
         $args = [
@@ -1792,7 +1909,7 @@ if (!function_exists('wp_theme_import_demo_homepage')) {
             return $page_id;
         }
 
-        wp_theme_seed_demo_blog_posts();
+        wp_theme_seed_demo_blog_posts($profile);
         if (function_exists('wp_theme_seed_sector_pages')) {
             wp_theme_seed_sector_pages($profile);
         } else {
@@ -1807,7 +1924,10 @@ if (!function_exists('wp_theme_import_demo_homepage')) {
         update_post_meta($page_id, '_wp_theme_demo_profile', !empty($profile['id']) ? sanitize_key($profile['id']) : 'business');
         update_option('show_on_front', 'page');
         update_option('page_on_front', (int) $page_id);
-        update_option('wp_theme_active_demo_profile', !empty($profile['id']) ? sanitize_key($profile['id']) : 'business');
+        update_option('wp_theme_active_demo_profile', $profile_id);
+        update_option('wp_theme_demo_import_version', $theme_version, false);
+        update_option('wp_theme_demo_language_bar_enabled', '1', false);
+        update_option('wp_theme_language_switcher_enabled', '1', false);
 
         do_action('wp_theme_after_demo_import', $page_id, $profile);
 

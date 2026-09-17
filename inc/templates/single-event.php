@@ -6,12 +6,12 @@ if (!defined('ABSPATH')) {
 while (have_posts()) {
     the_post();
 
-    $event_name = function_exists('get_field') ? get_field('event_name') : '';
-    $event_location = function_exists('get_field') ? get_field('event_location') : '';
-    $event_date = function_exists('get_field') ? get_field('event_date') : '';
-    $event_time = function_exists('get_field') ? get_field('event_time') : '';
-    $event_short_description = function_exists('get_field') ? get_field('event_short_description') : '';
-    $event_details = function_exists('get_field') ? get_field('event_details') : '';
+    $event_name = function_exists('wp_theme_acf_get') ? wp_theme_acf_get('event_name', get_the_ID(), '') : '';
+    $event_location = function_exists('wp_theme_acf_get') ? wp_theme_acf_get('event_location', get_the_ID(), '') : '';
+    $event_date = function_exists('wp_theme_acf_get') ? wp_theme_acf_get('event_date', get_the_ID(), '') : '';
+    $event_time = function_exists('wp_theme_acf_get') ? wp_theme_acf_get('event_time', get_the_ID(), '') : '';
+    $event_short_description = function_exists('wp_theme_acf_get') ? wp_theme_acf_get('event_short_description', get_the_ID(), '') : '';
+    $event_details = function_exists('wp_theme_acf_get') ? wp_theme_acf_get('event_details', get_the_ID(), '') : '';
     $event_excerpt = get_the_excerpt();
 
     if (!$event_name) {

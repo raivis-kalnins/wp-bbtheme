@@ -54,7 +54,7 @@ function wp_theme_generate_critical_css_file() {
 function wp_theme_perf_enqueue_critical_css() {
     $file = get_stylesheet_directory() . '/assets/css/critical-auto.css';
     if (wp_theme_perf_get('perf_auto_critical_css', false) && file_exists($file)) {
-        wp_enqueue_style('wp-theme-critical-auto', get_stylesheet_directory_uri() . '/assets/css/critical-auto.css', ['wp-theme-child-style'], filemtime($file));
+        wp_enqueue_style('wp-theme-critical-auto', get_stylesheet_directory_uri() . '/assets/css/critical-auto.css', [], filemtime($file));
     }
 }
 add_action('wp_enqueue_scripts', 'wp_theme_perf_enqueue_critical_css', 5);
@@ -135,13 +135,13 @@ function wp_theme_enqueue_cache_toolbar_assets($hook = '') {
         return;
     }
 
-    $css_file = get_stylesheet_directory() . '/assets/css/admin-cache-toolbar.css';
-    $js_file = get_stylesheet_directory() . '/assets/js/admin-cache-toolbar.js';
+    $css_file = get_template_directory() . '/assets/css/admin-cache-toolbar.css';
+    $js_file = get_template_directory() . '/assets/js/admin-cache-toolbar.js';
 
     if (file_exists($css_file)) {
         wp_enqueue_style(
             'wp-theme-cache-toolbar',
-            get_stylesheet_directory_uri() . '/assets/css/admin-cache-toolbar.css',
+            get_template_directory_uri() . '/assets/css/admin-cache-toolbar.css',
             ['dashicons'],
             filemtime($css_file)
         );
@@ -150,7 +150,7 @@ function wp_theme_enqueue_cache_toolbar_assets($hook = '') {
     if (file_exists($js_file)) {
         wp_enqueue_script(
             'wp-theme-cache-toolbar',
-            get_stylesheet_directory_uri() . '/assets/js/admin-cache-toolbar.js',
+            get_template_directory_uri() . '/assets/js/admin-cache-toolbar.js',
             [],
             filemtime($js_file),
             true

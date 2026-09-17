@@ -7,7 +7,7 @@
  * Inserter: true
  */
 ?>
-<!-- wp:wpbb/row {"customClasses":"container-fluid px-4 py-5 bg-dark text-white align-items-start wp-theme-footer-dark"} -->
+<!-- wp:wpbb/row {"containerClass":"container-fluid","customClasses":"px-4 py-5 bg-dark text-white align-items-start wp-theme-footer-dark"} -->
 <!-- wp:wpbb/column {"xs":12,"md":4,"customClasses":"mb-4 mb-md-0"} -->
 <!-- wp:site-logo {"width":136} /-->
 <!-- wp:paragraph --><p>Modern business and SaaS websites built with reusable sections and WP BBuilder blocks.</p><!-- /wp:paragraph -->
@@ -21,7 +21,7 @@
 <!-- wp:paragraph --><p>hello@example.com<br>+44 0000 000000<br>London, United Kingdom</p><!-- /wp:paragraph -->
 <!-- /wp:wpbb/column -->
 <!-- /wp:wpbb/row -->
-<!-- wp:wpbb/row {"customClasses":"container-fluid px-4 py-3 bg-black text-white border-top wp-theme-footer-dark"} -->
+<!-- wp:wpbb/row {"containerClass":"container-fluid","customClasses":"px-4 py-3 bg-black text-white border-top wp-theme-footer-dark"} -->
 <!-- wp:wpbb/column {"xs":12,"customClasses":"text-center"} -->
 <!-- wp:paragraph --><p>© 2026 Your Company. All rights reserved.</p><!-- /wp:paragraph -->
 <!-- /wp:wpbb/column -->

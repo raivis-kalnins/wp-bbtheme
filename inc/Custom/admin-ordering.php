@@ -129,9 +129,9 @@ add_action('admin_enqueue_scripts', function ($hook) {
         return;
     }
     wp_enqueue_script('jquery-ui-sortable');
-    $file = get_stylesheet_directory() . '/assets/js/admin-ordering.js';
+    $file = get_template_directory() . '/assets/js/admin-ordering.js';
     if (file_exists($file)) {
-        wp_enqueue_script('wp-theme-admin-ordering', get_stylesheet_directory_uri() . '/assets/js/admin-ordering.js', ['jquery', 'jquery-ui-sortable'], filemtime($file), true);
+        wp_enqueue_script('wp-theme-admin-ordering', get_template_directory_uri() . '/assets/js/admin-ordering.js', ['jquery', 'jquery-ui-sortable'], filemtime($file), true);
         wp_localize_script('wp-theme-admin-ordering', 'WPThemeOrdering', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wp_theme_save_order'),

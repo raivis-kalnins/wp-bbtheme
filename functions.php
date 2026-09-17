@@ -7,20 +7,106 @@ if (file_exists(get_template_directory() . '/vendor/autoload.php')) {
     require_once get_template_directory() . '/vendor/autoload.php';
 }
 
-function wp_theme_acf_get($key, $post_id = 'option', $default = '') {
-    if (!function_exists('get_field')) {
-        return $default;
-    }
+function wp_theme_acf_ready() {
+    // ACF 5.11+ rejects value reads before its initialization cycle. Checking
+    // acf/init also remains safe while ACF is inactive or temporarily disabled.
+    return function_exists('get_field') && (!function_exists('acf') || did_action('acf/init'));
+}
 
-    // ACF 5.11+ warns when field values are requested before ACF has initialized.
-    // Theme defaults are safe until acf/init has fired.
-    if (function_exists('acf') && !did_action('acf/init')) {
+function wp_theme_acf_get($key, $post_id = 'option', $default = '') {
+    if (!wp_theme_acf_ready()) {
         return $default;
     }
 
     $value = get_field($key, $post_id);
     return ($value !== null && $value !== false && $value !== '') ? $value : $default;
 }
+
+function wp_theme_acf_get_fields($post_id = 'option') {
+    if (!wp_theme_acf_ready() || !function_exists('get_fields')) {
+        return array();
+    }
+    $values = get_fields($post_id);
+    return is_array($values) ? $values : array();
+}
+
+/**
+ * Project-level feature flags must not become language-specific when
+ * ACF Options for Polylang is active. A small core-option mirror keeps setup
+ * actions (notably Demo Import) reliable during admin-ajax requests where the
+ * Polylang language context may differ from the settings screen.
+ */
+function wp_theme_global_feature_flag_option_name($key) {
+    return 'wp_theme_global_flag_' . sanitize_key($key);
+}
+
+function wp_theme_global_feature_flag($key, $default = false) {
+    $mirror = get_option(wp_theme_global_feature_flag_option_name($key), null);
+    if (null !== $mirror) {
+        return in_array($mirror, array(true, 1, '1', 'true', 'yes', 'on'), true);
+    }
+
+    if (wp_theme_acf_ready()) {
+        $value = get_field($key, 'option');
+        if (in_array($value, array(true, 1, '1', 'true', 'yes', 'on'), true)) {
+            update_option(wp_theme_global_feature_flag_option_name($key), '1', false);
+            return true;
+        }
+    }
+
+    // Standard ACF option key fallback for projects that enabled the flag
+    // before the global mirror was introduced.
+    $raw = get_option('options_' . sanitize_key($key), null);
+    if (in_array($raw, array(true, 1, '1', 'true', 'yes', 'on'), true)) {
+        update_option(wp_theme_global_feature_flag_option_name($key), '1', false);
+        return true;
+    }
+
+    // ACF Options for Polylang stores language-specific option keys. For this
+    // project-level setup flag, any previously saved truthy language value is
+    // enough to prime the global mirror. Once v3.8.5 saves the field, the mirror
+    // becomes the authoritative value and this compatibility query is skipped.
+    global $wpdb;
+    if (isset($wpdb) && isset($wpdb->options)) {
+        $like = '%' . $wpdb->esc_like(sanitize_key($key)) . '%';
+        $values = $wpdb->get_col($wpdb->prepare("SELECT option_value FROM {$wpdb->options} WHERE option_name LIKE %s", $like));
+        foreach ((array) $values as $candidate) {
+            $candidate = maybe_unserialize($candidate);
+            if (in_array($candidate, array(true, 1, '1', 'true', 'yes', 'on'), true)) {
+                update_option(wp_theme_global_feature_flag_option_name($key), '1', false);
+                return true;
+            }
+        }
+    }
+
+    return (bool) $default;
+}
+
+function wp_theme_mirror_global_feature_flag($value, $post_id, $field) {
+    $name = isset($field['name']) ? sanitize_key((string) $field['name']) : '';
+    if ($name) {
+        update_option(
+            wp_theme_global_feature_flag_option_name($name),
+            in_array($value, array(true, 1, '1', 'true', 'yes', 'on'), true) ? '1' : '0',
+            false
+        );
+    }
+    return $value;
+}
+add_filter('acf/update_value/name=theme_enable_demo_import', 'wp_theme_mirror_global_feature_flag', 20, 3);
+
+function wp_theme_prime_global_setup_flags() {
+    if (!is_admin() || wp_doing_ajax() || !current_user_can('edit_theme_options') || !wp_theme_acf_ready()) {
+        return;
+    }
+    if (null === get_option(wp_theme_global_feature_flag_option_name('theme_enable_demo_import'), null)) {
+        $value = get_field('theme_enable_demo_import', 'option');
+        if (in_array($value, array(true, 1, '1', 'true', 'yes', 'on'), true)) {
+            update_option(wp_theme_global_feature_flag_option_name('theme_enable_demo_import'), '1', false);
+        }
+    }
+}
+add_action('admin_init', 'wp_theme_prime_global_setup_flags', 30);
 
 
 function wp_theme_optional_cpt_option_map() {
@@ -30,7 +116,6 @@ function wp_theme_optional_cpt_option_map() {
         'products'      => 'theme_enable_products_cpt',
         'case-study'    => 'theme_enable_case_study_cpt',
         'testimonial'   => 'theme_enable_testimonial_cpt',
-        'megamenu'      => 'theme_enable_megamenu_cpt',
     ];
 }
 
@@ -41,6 +126,7 @@ function wp_theme_filter_optional_cpt_args($args, $post_type) {
     }
 
     $is_enabled = (bool) wp_theme_acf_get($map[$post_type], 'option', 0);
+    $is_enabled = (bool) apply_filters('wp_theme_optional_cpt_enabled', $is_enabled, $post_type, $map[$post_type]);
     if ($is_enabled) {
         return $args;
     }
@@ -74,6 +160,7 @@ function wp_theme_setup() {
     add_theme_support('html5', ['comment-form','comment-list','gallery','caption','style','script','search-form']);
 
     register_nav_menus([
+        'wp-header-top-menu' => __('WP Header Top Menu', 'wp-theme'),
         'wp-header-menu'     => __('WP Header Menu', 'wp-theme'),
         'wp-footer-menu'     => __('WP Footer Menu', 'wp-theme'),
     ]);
@@ -115,11 +202,62 @@ function wp_theme_page_uses_library($library) {
     return false;
 }
 
+/**
+ * The parent is intentionally presentation-free on the front end.
+ * Child themes own all visual CSS; the parent supplies PHP/JS functionality and libraries.
+ */
 function wp_theme_enqueue_assets() {
-	$parent = wp_get_theme(get_template());
-	wp_enqueue_style('wp-theme-style', get_template_directory_uri() . '/style.css', [], $parent->get('Version'));
+    // No parent presentation stylesheet is enqueued by design.
 }
 add_action('wp_enqueue_scripts', 'wp_theme_enqueue_assets', 20);
+/**
+ * Maintained suite stylesheets. Bespoke/legacy children sharing this parent are
+ * intentionally excluded so parent updates do not take over their shell/CSS.
+ */
+function wp_theme_current_suite_stylesheets() {
+    return array(
+        'wp-bbtheme',
+        'wp-bbtheme-child-automotive',
+        'wp-bbtheme-child-building-services',
+        'wp-bbtheme-child-business',
+        'wp-bbtheme-child-elearning',
+        'wp-bbtheme-child-hotel',
+        'wp-bbtheme-child-insurance',
+        'wp-bbtheme-child-logistics',
+        'wp-bbtheme-child-medicine',
+        'wp-bbtheme-child-realestate',
+        'wp-bbtheme-child-restaurant',
+        'wp-bbtheme-child-travel',
+        'wp-bbtheme-child-woo-clouthes',
+        'wp-bbtheme-child-woo-events',
+        'wp-bbtheme-child-woo-tech-shop',
+    );
+}
+
+function wp_theme_is_current_suite_theme() {
+    $theme = wp_get_theme();
+    $stylesheet = (string) $theme->get_stylesheet();
+    $template = (string) $theme->get_template();
+
+    if ( 'wp-bbtheme' === $stylesheet ) {
+        return true;
+    }
+    if ( 'wp-bbtheme' !== $template ) {
+        return false;
+    }
+
+    // Keep the maintained suite working even when WordPress has renamed a
+    // child folder during an upload/replace. Legacy Garilla children use a
+    // different text domain/version and therefore remain outside this shell.
+    $theme_name = (string) $theme->get( 'Name' );
+    $version = (string) $theme->get( 'Version' );
+    $declared_suite_child = 0 === strpos( $theme_name, 'WP BBTheme Child' ) && $version && version_compare( $version, '3.8.0', '>=' );
+
+    return $declared_suite_child || in_array( $stylesheet, wp_theme_current_suite_stylesheets(), true );
+}
+
+
+
 
 
 function wp_theme_disable_unused_frontend_assets() {
@@ -201,6 +339,8 @@ add_action('wp_body_open', 'wp_theme_skip_link');
 function wp_theme_pattern_categories() {
     register_block_pattern_category('wp-patterns-main', ['label' => __('WP Patterns', 'wp-theme')]);
     register_block_pattern_category('wp-patterns-main-core', ['label' => __('WP Core Patterns', 'wp-theme')]);
+    register_block_pattern_category('wp-theme-current', ['label' => __('Current Theme', 'wp-theme')]);
+    register_block_pattern_category('wp-theme-forms', ['label' => __('Forms', 'wp-theme')]);
 }
 add_action('init', 'wp_theme_pattern_categories');
 
@@ -232,9 +372,8 @@ add_shortcode('wp_theme_breadcrumbs', 'wp_theme_breadcrumbs_shortcode');
 
 function wp_theme_more_posts_intro_shortcode() {
     $text = '';
-    if (function_exists('get_fields')) {
-        $fields = get_fields();
-        $text = $fields['single_blog_post_more_posts_intro'] ?? '';
+    if (function_exists('wp_theme_acf_get')) {
+        $text = wp_theme_acf_get('single_blog_post_more_posts_intro', get_the_ID(), '');
     }
     $blog_url = get_post_type_archive_link('post') ?: home_url('/blog/');
     $label = get_locale() === 'lv' ? 'Uz blogu' : 'Back to Blog';
@@ -243,11 +382,10 @@ function wp_theme_more_posts_intro_shortcode() {
 add_shortcode('single_blog_post_more_posts_intro', 'wp_theme_more_posts_intro_shortcode');
 
 function wp_theme_article_intro_shortcode() {
-    if (!function_exists('get_fields')) {
+    if (!function_exists('wp_theme_acf_get')) {
         return '';
     }
-    $fields = get_fields();
-    return wp_kses_post($fields['single_blog_post_intro'] ?? '');
+    return wp_kses_post(wp_theme_acf_get('single_blog_post_intro', get_the_ID(), ''));
 }
 add_shortcode('single_blog_post_intro', 'wp_theme_article_intro_shortcode');
 
@@ -294,12 +432,12 @@ add_action('template_redirect', 'wp_theme_comments_redirect');
 
 
 function wp_theme_login_logo() {
-    if (!function_exists('get_field')) {
+    if (!wp_theme_acf_ready()) {
         return;
     }
 
-    $enabled = get_field('theme_login_logo_enabled', 'option');
-    $logo = get_field('theme_login_logo', 'option');
+    $enabled = wp_theme_acf_get('theme_login_logo_enabled', 'option', 0);
+    $logo = wp_theme_acf_get('theme_login_logo', 'option', '');
 
     if (empty($enabled) || empty($logo)) {
         return;
@@ -374,7 +512,7 @@ add_action('admin_notices', function () {
     }
 });
 
-foreach (['sector-demos.php','acf-theme-options.php','performance-tools.php','booking.php','events.php','developer-tools.php','admin-ordering.php','tpl-helper.php','shortcodes.php','loc.php','info.php','block-types.php','wp-nav-walker.php'] as $file) {
+foreach (['sector-demos.php','blog-system.php','site-essentials.php','content-productivity.php','acf-theme-options.php','project-mode.php','performance-tools.php','booking.php','events.php','developer-tools.php','admin-ordering.php','tpl-helper.php','shortcodes.php','loc.php','info.php','block-types.php','wp-nav-walker.php','nav-menu-enhancements.php','integrations.php','site-shell.php','sector-finder-block.php','sector-directory.php','item-gallery.php','forms-library.php','editor-patterns.php','v381024-routing.php'] as $file) {
     $path = get_template_directory() . '/inc/Custom/' . $file;
     if (file_exists($path)) {
         require_once $path;
